@@ -14,8 +14,8 @@ namespace IL2CPP
                 DWORD m_OldProtection = 0x0;
                 if (!VirtualProtect(m_VTableFunc, sizeof(void*), PAGE_READWRITE, &m_OldProtection))
                     return;
-             
-                if (m_Original) 
+
+                if (m_Original)
                     *m_Original = *m_VTableFunc;
 
                 *m_VTableFunc = m_NewFunc;
@@ -30,6 +30,34 @@ namespace IL2CPP
                 for (int i = 0; m_Count > i; ++i)
                 {
                     if (memcmp(m_VTable[i], m_OpcodesPtr, m_OpcodeSize) == 0)
+                        return &m_VTable[i];
+                }
+
+                return 0;
+            }
+
+            // Pattern+mask matcher (mask byte 0xFF = match, 0x00 = wildcard)
+            void** FindFunctionMasked(void** m_VTable, int m_Count, const unsigned char* pattern, const unsigned char* mask, size_t patternSize)
+            {
+                if (!m_VTable || !pattern || !mask || patternSize == 0)
+                    return 0;
+
+                for (int i = 0; i < m_Count; ++i)
+                {
+                    void* p = m_VTable[i];
+                    if (!p)
+                        continue;
+
+                    bool ok = true;
+                    for (size_t b = 0; b < patternSize; ++b)
+                    {
+                        if (mask[b] && reinterpret_cast<unsigned char*>(p)[b] != pattern[b])
+                        {
+                            ok = false;
+                            break;
+                        }
+                    }
+                    if (ok)
                         return &m_VTable[i];
                 }
 
