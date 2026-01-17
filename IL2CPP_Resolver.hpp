@@ -9,10 +9,20 @@
 #include <unordered_map>
 #include <Windows.h>
 
-// Application Defines
-#ifndef UNITY_VERSION_2022_3_8F1
-	// If Unity version is equal or greater than 2022.3.8f1 uncomment this define.
-	// #define UNITY_VERSION_2022_3_8F1
+// -----------------------------------------------------------------------------
+// Unity version/layout selection
+//
+// Unity 2022.3.8f1+ (including Unity 2023.x/2024.x and Unity 6 / 6000.x) changed
+// multiple IL2CPP structure layouts (most notably Il2CppType / MethodInfo params).
+//
+// This project is primarily used on modern Unity games; therefore we default to
+// the new layout unless the user explicitly opts into the legacy layout.
+//
+// If you target < 2022.3.8f1, define UNITY_VERSION_PRE_2022_3_8F1 BEFORE including
+// IL2CPP_Resolver.hpp.
+// -----------------------------------------------------------------------------
+#if !defined(UNITY_VERSION_2022_3_8F1) && !defined(UNITY_VERSION_PRE_2022_3_8F1)
+#define UNITY_VERSION_2022_3_8F1
 #endif
 
 // IL2CPP Defines
@@ -20,18 +30,18 @@
 // Disable Asserts
 //#define IL2CPP_ASSERT(x) assert(0)
 #ifndef IL2CPP_ASSERT
-	#include <cassert>
-	#define IL2CPP_ASSERT(x) assert(x)
+#include <cassert>
+#define IL2CPP_ASSERT(x) assert(x)
 #endif
 
 #ifndef IL2CPP_RStr 
 	// If you wanna forward to some string encryption just define before including this file.
-	#define IL2CPP_RStr(x) x
+#define IL2CPP_RStr(x) x
 #endif
 
 #ifndef IL2CPP_MAIN_MODULE
 	// If the game for some reason uses diff module name just define own one before including this file.
-	#define IL2CPP_MAIN_MODULE IL2CPP_RStr("GameAssembly.dll")
+#define IL2CPP_MAIN_MODULE IL2CPP_RStr("GameAssembly.dll")
 #endif
 
 #include "Defines.hpp"
@@ -104,26 +114,26 @@ namespace IL2CPP
 		{
 			switch (m_ExportObfuscation)
 			{
-				case m_eExportObfuscationType::ROT:
+			case m_eExportObfuscationType::ROT:
+			{
+				if (m_ROTObfuscationValue == -1) // Bruteforce
 				{
-					if (m_ROTObfuscationValue == -1) // Bruteforce
+					for (int i = 1; 26 > i; ++i)
 					{
-						for (int i = 1; 26 > i; ++i)
+						void* m_Return = GetProcAddress(Globals.m_GameAssembly, &Unity::Obfuscators::ROT_String(m_Name, i)[0]);
+						if (m_Return)
 						{
-							void* m_Return = GetProcAddress(Globals.m_GameAssembly, &Unity::Obfuscators::ROT_String(m_Name, i)[0]);
-							if (m_Return)
-							{
-								m_ROTObfuscationValue = i;
-								return m_Return;
-							}
+							m_ROTObfuscationValue = i;
+							return m_Return;
 						}
-
-						return nullptr;
 					}
 
-					return GetProcAddress(Globals.m_GameAssembly, &Unity::Obfuscators::ROT_String(m_Name, m_ROTObfuscationValue)[0]);
+					return nullptr;
 				}
-				default: return GetProcAddress(Globals.m_GameAssembly, m_Name);
+
+				return GetProcAddress(Globals.m_GameAssembly, &Unity::Obfuscators::ROT_String(m_Name, m_ROTObfuscationValue)[0]);
+			}
+			default: return GetProcAddress(Globals.m_GameAssembly, m_Name);
 			}
 
 			return nullptr;
@@ -150,7 +160,7 @@ namespace IL2CPP
 			}
 
 			IL2CPP_ASSERT(m_InitExportResolved && "Couldn't resolve il2cpp_init!");
-			if (!m_InitExportResolved) 
+			if (!m_InitExportResolved)
 				return false;
 
 			std::unordered_map<std::string, void**> m_ExportMap =
@@ -202,7 +212,7 @@ namespace IL2CPP
 		}
 	}
 
-	/* 
+	/*
 	*	You need to call this, before using any IL2CPP/Unity Functions!
 	*	Args:
 	*		m_WaitForModule - Will wait for main module if you're loading your dll earlier than the main module.
