@@ -5,7 +5,7 @@ A run-time API resolver for IL2CPP Unity.
 
 ### Quick Example
 ```cpp
-#include <IL2CPP_Resolver.hpp>
+#include "IL2CPP_Resolver.hpp"
 
 void SomeFunction()
 {
