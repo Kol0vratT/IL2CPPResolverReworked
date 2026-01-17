@@ -1,4 +1,4 @@
-## IL2CPP Resolver
+## IL2CPP Resolver Reworked
 A run-time API resolver for IL2CPP Unity.
 
 [External Version(Rework WIP)](https://github.com/extremeblackliu/IL2CPP_Resolver_External) | [(Old) Pre-HeaderOnly Version](https://github.com/sneakyevil/IL2CPP_Resolver/tree/old_nonheader)
