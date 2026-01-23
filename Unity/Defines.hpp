@@ -8,6 +8,7 @@
 
 // Camera
 #define UNITY_CAMERA_CLASS                                          "UnityEngine.Camera"
+
 #define UNITY_CAMERA_GETCURRENT                                     IL2CPP_RStr(UNITY_CAMERA_CLASS"::get_current")
 #define UNITY_CAMERA_GETMAIN                                        IL2CPP_RStr(UNITY_CAMERA_CLASS"::get_main")
 #define UNITY_CAMERA_GETDEPTH                                       IL2CPP_RStr(UNITY_CAMERA_CLASS"::get_depth")
@@ -18,11 +19,13 @@
 
 // Component
 #define UNITY_COMPONENT_CLASS										"UnityEngine.Component"
+
 #define UNITY_COMPONENT_GETGAMEOBJECT								IL2CPP_RStr(UNITY_COMPONENT_CLASS"::get_gameObject")
 #define UNITY_COMPONENT_GETTRANSFORM								IL2CPP_RStr(UNITY_COMPONENT_CLASS"::get_transform")
 
 // GameObject
 #define UNITY_GAMEOBJECT_CLASS										"UnityEngine.GameObject"
+
 #define UNITY_GAMEOBJECT_ADDCOMPONENT 								IL2CPP_RStr(UNITY_GAMEOBJECT_CLASS"::Internal_AddComponentWithType")
 #define UNITY_GAMEOBJECT_CREATEPRIMITIVE 							IL2CPP_RStr(UNITY_GAMEOBJECT_CLASS"::CreatePrimitive")
 #define UNITY_GAMEOBJECT_FIND 										IL2CPP_RStr(UNITY_GAMEOBJECT_CLASS"::Find")
@@ -38,6 +41,7 @@
 
 // LayerMask
 #define UNITY_LAYERMASK_CLASS										"UnityEngine.LayerMask"
+
 #define UNITY_LAYERMASK_LAYERTONAME									IL2CPP_RStr(UNITY_LAYERMASK_CLASS"::LayerToName")
 #define UNITY_LAYERMASK_NAMETOLAYER									IL2CPP_RStr(UNITY_LAYERMASK_CLASS"::NameToLayer")
 
@@ -46,12 +50,14 @@
 
 // Object
 #define UNITY_OBJECT_CLASS											"UnityEngine.Object"
+
 #define UNITY_OBJECT_DESTROY										IL2CPP_RStr(UNITY_OBJECT_CLASS"::Destroy")
 #define UNITY_OBJECT_FINDOBJECTSOFTYPE								IL2CPP_RStr(UNITY_OBJECT_CLASS"::FindObjectsOfType(System.Type,System.Boolean)")
 #define UNITY_OBJECT_GETNAME										IL2CPP_RStr(UNITY_OBJECT_CLASS"::GetName")
 
 // Rigidbody
 #define UNITY_RIGIDBODY_CLASS										"UnityEngine.Rigidbody"
+
 #define UNITY_RIGIDBODY_GETDETECTCOLLISIONS                         IL2CPP_RStr(UNITY_RIGIDBODY_CLASS"::get_detectCollisions")
 #define UNITY_RIGIDBODY_GETVELOCITY                                 IL2CPP_RStr(UNITY_RIGIDBODY_CLASS"::get_velocity_Injected")
 #define UNITY_RIGIDBODY_SETDETECTCOLLISIONS                         IL2CPP_RStr(UNITY_RIGIDBODY_CLASS"::set_detectCollisions")
@@ -59,6 +65,7 @@
 
 // Transform
 #define UNITY_TRANSFORM_CLASS										"UnityEngine.Transform"
+
 #define UNITY_TRANSFORM_GETPARENT                                   IL2CPP_RStr(UNITY_TRANSFORM_CLASS"::GetParent")
 #define UNITY_TRANSFORM_GETROOT                                     IL2CPP_RStr(UNITY_TRANSFORM_CLASS"::GetRoot")
 #define UNITY_TRANSFORM_GETCHILD                                    IL2CPP_RStr(UNITY_TRANSFORM_CLASS"::GetChild")
@@ -72,6 +79,88 @@
 #define UNITY_TRANSFORM_SETROTATION									IL2CPP_RStr(UNITY_TRANSFORM_CLASS"::set_rotation_Injected")
 #define UNITY_TRANSFORM_SETLOCALPOSITION							IL2CPP_RStr(UNITY_TRANSFORM_CLASS"::set_localPosition_Injected")
 #define UNITY_TRANSFORM_SETLOCALSCALE								IL2CPP_RStr(UNITY_TRANSFORM_CLASS"::set_localScale_Injected")
+
+// RenderSettings
+#define UNITY_RENDERSETTINGS_CLASS                                  "UnityEngine.RenderSettings"
+
+#define UNITY_RENDERSETTINGS_GET_FOG                                IL2CPP_RStr(UNITY_RENDERSETTINGS_CLASS"::get_fog")
+#define UNITY_RENDERSETTINGS_SET_FOG                                IL2CPP_RStr(UNITY_RENDERSETTINGS_CLASS"::set_fog")
+#define UNITY_RENDERSETTINGS_GET_FOGCOLOR                           IL2CPP_RStr(UNITY_RENDERSETTINGS_CLASS"::get_fogColor")
+#define UNITY_RENDERSETTINGS_SET_FOGCOLOR                           IL2CPP_RStr(UNITY_RENDERSETTINGS_CLASS"::set_fogColor")
+#define UNITY_RENDERSETTINGS_GET_AMBIENT                            IL2CPP_RStr(UNITY_RENDERSETTINGS_CLASS"::get_ambientLight")
+#define UNITY_RENDERSETTINGS_SET_AMBIENT                            IL2CPP_RStr(UNITY_RENDERSETTINGS_CLASS"::set_ambientLight")
+#define UNITY_RENDERSETTINGS_GET_SKYBOX                             IL2CPP_RStr(UNITY_RENDERSETTINGS_CLASS"::get_skybox")
+#define UNITY_RENDERSETTINGS_SET_SKYBOX                             IL2CPP_RStr(UNITY_RENDERSETTINGS_CLASS"::set_skybox")
+#define UNITY_RENDERSETTINGS_GET_SUN                                IL2CPP_RStr(UNITY_RENDERSETTINGS_CLASS"::get_sun")
+#define UNITY_RENDERSETTINGS_SET_SUN                                IL2CPP_RStr(UNITY_RENDERSETTINGS_CLASS"::set_sun")
+
+// Time
+#define UNITY_TIME_CLASS                                            "UnityEngine.Time"
+
+#define UNITY_TIME_GET_DELTATIME                                    IL2CPP_RStr(UNITY_TIME_CLASS"::get_deltaTime")
+#define UNITY_TIME_GET_UNSCALEDDT                                   IL2CPP_RStr(UNITY_TIME_CLASS"::get_unscaledDeltaTime")
+#define UNITY_TIME_GET_TIME                                         IL2CPP_RStr(UNITY_TIME_CLASS"::get_time")
+#define UNITY_TIME_GET_UNSCALEDTIME                                 IL2CPP_RStr(UNITY_TIME_CLASS"::get_unscaledTime")
+#define UNITY_TIME_GET_FIXEDDT                                      IL2CPP_RStr(UNITY_TIME_CLASS"::get_fixedDeltaTime")
+#define UNITY_TIME_SET_FIXEDDT                                      IL2CPP_RStr(UNITY_TIME_CLASS"::set_fixedDeltaTime")
+#define UNITY_TIME_GET_TIMESCALE                                    IL2CPP_RStr(UNITY_TIME_CLASS"::get_timeScale")
+#define UNITY_TIME_SET_TIMESCALE                                    IL2CPP_RStr(UNITY_TIME_CLASS"::set_timeScale")
+#define UNITY_TIME_GET_FRAMECOUNT                                   IL2CPP_RStr(UNITY_TIME_CLASS"::get_frameCount")
+
+// Application
+#define UNITY_APPLICATION_CLASS                                     "UnityEngine.Application"
+
+#define UNITY_APPLICATION_GET_TARGETFRAMERATE                       IL2CPP_RStr(UNITY_APPLICATION_CLASS"::get_targetFrameRate")
+#define UNITY_APPLICATION_SET_TARGETFRAMERATE                       IL2CPP_RStr(UNITY_APPLICATION_CLASS"::set_targetFrameRate")
+#define UNITY_APPLICATION_GET_ISFOCUSED                             IL2CPP_RStr(UNITY_APPLICATION_CLASS"::get_isFocused")
+#define UNITY_APPLICATION_GET_DATAPATH                              IL2CPP_RStr(UNITY_APPLICATION_CLASS"::get_dataPath")
+#define UNITY_APPLICATION_GET_PERSISTENT                            IL2CPP_RStr(UNITY_APPLICATION_CLASS"::get_persistentDataPath")
+#define UNITY_APPLICATION_GET_STREAMING                             IL2CPP_RStr(UNITY_APPLICATION_CLASS"::get_streamingAssetsPath")
+#define UNITY_APPLICATION_GET_PRODUCTNAME                           IL2CPP_RStr(UNITY_APPLICATION_CLASS"::get_productName")
+#define UNITY_APPLICATION_GET_IDENTIFIER                            IL2CPP_RStr(UNITY_APPLICATION_CLASS"::get_identifier")
+#define UNITY_APPLICATION_GET_UNITYVERSION                          IL2CPP_RStr(UNITY_APPLICATION_CLASS"::get_unityVersion")
+#define UNITY_APPLICATION_QUIT0                                     IL2CPP_RStr(UNITY_APPLICATION_CLASS"::Quit")
+#define UNITY_APPLICATION_QUIT1                                     IL2CPP_RStr(UNITY_APPLICATION_CLASS"::Quit(System.Int32)")
+
+// SceneManagement
+#define UNITY_SCENEMANAGER_CLASS                                    "UnityEngine.SceneManagement.SceneManager"
+#define UNITY_SCENE_CLASS                                           "UnityEngine.SceneManagement.Scene"
+#define UNITY_ASYNCOP_CLASS                                         "UnityEngine.AsyncOperation"
+
+#define UNITY_SM_SCENECOUNT                                         IL2CPP_RStr(UNITY_SCENEMANAGER_CLASS"::get_sceneCount")
+#define UNITY_SM_GETACTIVESCENE                                     IL2CPP_RStr(UNITY_SCENEMANAGER_CLASS"::GetActiveScene")
+#define UNITY_SM_SETACTIVESCENE                                     IL2CPP_RStr(UNITY_SCENEMANAGER_CLASS"::SetActiveScene")
+#define UNITY_SM_GETSCENEAT                                         IL2CPP_RStr(UNITY_SCENEMANAGER_CLASS"::GetSceneAt")
+#define UNITY_SM_GETSCENEBYNAME                                     IL2CPP_RStr(UNITY_SCENEMANAGER_CLASS"::GetSceneByName")
+#define UNITY_SM_GETSCENEBYPATH                                     IL2CPP_RStr(UNITY_SCENEMANAGER_CLASS"::GetSceneByPath")
+#define UNITY_SM_GETSCENEBYBUILDINDEX                               IL2CPP_RStr(UNITY_SCENEMANAGER_CLASS"::GetSceneByBuildIndex")
+#define UNITY_SM_LOADSCENE_NAME                                     IL2CPP_RStr(UNITY_SCENEMANAGER_CLASS"::LoadScene(System.String)")
+#define UNITY_SM_LOADSCENE_INDEX                                    IL2CPP_RStr(UNITY_SCENEMANAGER_CLASS"::LoadScene(System.Int32)")
+#define UNITY_SM_LOADSCENE_NAME_MODE                                IL2CPP_RStr(UNITY_SCENEMANAGER_CLASS"::LoadScene(System.String,UnityEngine.SceneManagement.LoadSceneMode)")
+#define UNITY_SM_LOADSCENE_INDEX_MODE                               IL2CPP_RStr(UNITY_SCENEMANAGER_CLASS"::LoadScene(System.Int32,UnityEngine.SceneManagement.LoadSceneMode)")
+#define UNITY_SM_LOADSCENEASYNC_NAME                                IL2CPP_RStr(UNITY_SCENEMANAGER_CLASS"::LoadSceneAsync(System.String)")
+#define UNITY_SM_LOADSCENEASYNC_INDEX                               IL2CPP_RStr(UNITY_SCENEMANAGER_CLASS"::LoadSceneAsync(System.Int32)")
+#define UNITY_SM_LOADSCENEASYNC_NAME_MODE                           IL2CPP_RStr(UNITY_SCENEMANAGER_CLASS"::LoadSceneAsync(System.String,UnityEngine.SceneManagement.LoadSceneMode)")
+#define UNITY_SM_LOADSCENEASYNC_INDEX_MODE                          IL2CPP_RStr(UNITY_SCENEMANAGER_CLASS"::LoadSceneAsync(System.Int32,UnityEngine.SceneManagement.LoadSceneMode)")
+#define UNITY_SM_UNLOADSCENEASYNC_SCENE                             IL2CPP_RStr(UNITY_SCENEMANAGER_CLASS"::UnloadSceneAsync(UnityEngine.SceneManagement.Scene)")
+#define UNITY_SM_UNLOADSCENEASYNC_NAME                              IL2CPP_RStr(UNITY_SCENEMANAGER_CLASS"::UnloadSceneAsync(System.String)")
+#define UNITY_SM_UNLOADSCENEASYNC_INDEX                             IL2CPP_RStr(UNITY_SCENEMANAGER_CLASS"::UnloadSceneAsync(System.Int32)")
+#define UNITY_SM_MERGESCENES                                        IL2CPP_RStr(UNITY_SCENEMANAGER_CLASS"::MergeScenes")
+#define UNITY_SM_MOVEGAMEOBJECTTOSCENE                              IL2CPP_RStr(UNITY_SCENEMANAGER_CLASS"::MoveGameObjectToScene")
+
+// Debug
+#define UNITY_DEBUG_CLASS                                           "UnityEngine.Debug"
+
+#define UNITY_DEBUG_LOG_OBJ                                         IL2CPP_RStr(UNITY_DEBUG_CLASS"::Log(System.Object)")
+#define UNITY_DEBUG_LOGWARN_OBJ                                     IL2CPP_RStr(UNITY_DEBUG_CLASS"::LogWarning(System.Object)")
+#define UNITY_DEBUG_LOGERR_OBJ                                      IL2CPP_RStr(UNITY_DEBUG_CLASS"::LogError(System.Object)")
+#define UNITY_DEBUG_LOG_STR                                         IL2CPP_RStr(UNITY_DEBUG_CLASS"::Log(System.String)")
+#define UNITY_DEBUG_LOGWARN_STR                                     IL2CPP_RStr(UNITY_DEBUG_CLASS"::LogWarning(System.String)")
+#define UNITY_DEBUG_LOGERR_STR                                      IL2CPP_RStr(UNITY_DEBUG_CLASS"::LogError(System.String)")
+
+
+
+
 
 namespace Unity
 {
