@@ -92,6 +92,11 @@ namespace Unity
 #include "Unity/API/LayerMask.hpp"
 #include "Unity/API/Rigidbody.hpp"
 #include "Unity/API/Transform.hpp"
+#include "Unity/API/RenderSettings.hpp"
+#include "Unity/API/Time.hpp"
+#include "Unity/API/Application.hpp"
+#include "Unity/API/SceneManager.hpp"
+#include "Unity/API/Debug.hpp"
 
 // IL2CPP Headers after Unity API
 #include "Utils/Helper.hpp"
@@ -204,6 +209,11 @@ namespace IL2CPP
 			Unity::Object::Initialize();
 			Unity::RigidBody::Initialize();
 			Unity::Transform::Initialize();
+			Unity::RenderSettings::Initialize();
+			Unity::Time::Initialize();
+			Unity::Application::Initialize();
+			Unity::SceneManager::Initialize();
+			Unity::Debug::Initialize();
 
 			// Caches
 			IL2CPP::SystemTypeCache::Initializer::PreCache();
