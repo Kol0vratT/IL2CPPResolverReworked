@@ -8,7 +8,7 @@ It provides a high-level and low-level API for resolving IL2CPP exports, accessi
 
 ---
 
-# DOCUMENTATION
+# SIMPLE DOCUMENTATION
 
 ---
 
