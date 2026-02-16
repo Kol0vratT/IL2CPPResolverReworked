@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 namespace Unity
 {
@@ -135,18 +135,27 @@ namespace Unity
         // -------------------------
         inline bool GetFog()
         {
+            if (!m_RenderSettingsFunctions.m_GetFog)
+                return false;
+
             return reinterpret_cast<bool(UNITY_CALLING_CONVENTION)()>(
                 m_RenderSettingsFunctions.m_GetFog)();
         }
 
         inline void SetFog(bool v)
         {
+            if (!m_RenderSettingsFunctions.m_SetFog)
+                return;
+
             reinterpret_cast<void(UNITY_CALLING_CONVENTION)(bool)>(
                 m_RenderSettingsFunctions.m_SetFog)(v);
         }
         inline Color GetFogColor()
         {
             Color out{};
+            if (!m_RenderSettingsFunctions.m_GetFogColor)
+                return out;
+
             reinterpret_cast<void(UNITY_CALLING_CONVENTION)(Color&)>(
                 m_RenderSettingsFunctions.m_GetFogColor)(out);
             return out;
@@ -154,6 +163,9 @@ namespace Unity
 
         inline void SetFogColor(Color& v)
         {
+            if (!m_RenderSettingsFunctions.m_SetFogColor)
+                return;
+
             reinterpret_cast<void(UNITY_CALLING_CONVENTION)(Color&)>(
                 m_RenderSettingsFunctions.m_SetFogColor)(v);
         }
@@ -161,6 +173,9 @@ namespace Unity
         inline Color GetAmbientLight()
         {
             Color out{};
+            if (!m_RenderSettingsFunctions.m_GetAmbientLight)
+                return out;
+
             reinterpret_cast<void(UNITY_CALLING_CONVENTION)(Color&)>(
                 m_RenderSettingsFunctions.m_GetAmbientLight)(out);
             return out;
@@ -168,30 +183,45 @@ namespace Unity
 
         inline void SetAmbientLight(Color& v)
         {
+            if (!m_RenderSettingsFunctions.m_SetAmbientLight)
+                return;
+
             reinterpret_cast<void(UNITY_CALLING_CONVENTION)(Color&)>(
                 m_RenderSettingsFunctions.m_SetAmbientLight)(v);
         }
 
         inline CObject* GetSkybox()
         {
+            if (!m_RenderSettingsFunctions.m_GetSkybox)
+                return nullptr;
+
             return reinterpret_cast<CObject * (UNITY_CALLING_CONVENTION)()>(
                 m_RenderSettingsFunctions.m_GetSkybox)();
         }
 
         inline void SetSkybox(CObject* mat)
         {
+            if (!m_RenderSettingsFunctions.m_SetSkybox)
+                return;
+
             reinterpret_cast<void(UNITY_CALLING_CONVENTION)(CObject*)>(
                 m_RenderSettingsFunctions.m_SetSkybox)(mat);
         }
 
         inline CObject* GetSun()
         {
+            if (!m_RenderSettingsFunctions.m_GetSun)
+                return nullptr;
+
             return reinterpret_cast<CObject * (UNITY_CALLING_CONVENTION)()>(
                 m_RenderSettingsFunctions.m_GetSun)();
         }
 
         inline void SetSun(CObject* lightObj)
         {
+            if (!m_RenderSettingsFunctions.m_SetSun)
+                return;
+
             reinterpret_cast<void(UNITY_CALLING_CONVENTION)(CObject*)>(
                 m_RenderSettingsFunctions.m_SetSun)(lightObj);
         }
