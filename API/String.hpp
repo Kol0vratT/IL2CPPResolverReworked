@@ -6,6 +6,12 @@ namespace IL2CPP
 	{
 		Unity::System_String* New(const char* m_String)
 		{
+			if (!m_String)
+				m_String = "";
+
+			if (!Functions.m_StringNew)
+				return nullptr;
+
 			return reinterpret_cast<Unity::System_String*(IL2CPP_CALLING_CONVENTION)(const char*)>(Functions.m_StringNew)(m_String);
 		}
 
