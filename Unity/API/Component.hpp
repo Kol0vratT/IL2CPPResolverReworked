@@ -14,13 +14,21 @@ namespace Unity
 	public:
 		CGameObject* GetGameObject()
 		{
+			if (!this || !m_ComponentFunctions.m_GetGameObject)
+				return nullptr;
+
 			void* selfArg = m_ComponentFunctions.m_GetGameObject_ThisIsPtr ? this->m_CachedPtr : (void*)this;
+			if (!selfArg) return nullptr;
 			return reinterpret_cast<CGameObject * (UNITY_CALLING_CONVENTION)(void*)>(m_ComponentFunctions.m_GetGameObject)(selfArg);
 		}
 
 		CTransform* GetTransform()
 		{
+			if (!this || !m_ComponentFunctions.m_GetTransform)
+				return nullptr;
+
 			void* selfArg = m_ComponentFunctions.m_GetTransform_ThisIsPtr ? this->m_CachedPtr : (void*)this;
+			if (!selfArg) return nullptr;
 			return reinterpret_cast<CTransform * (UNITY_CALLING_CONVENTION)(void*)>(m_ComponentFunctions.m_GetTransform)(selfArg);
 		}
 	};
