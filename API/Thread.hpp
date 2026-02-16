@@ -6,11 +6,17 @@ namespace IL2CPP
 	{
 		void* Attach(void* m_Domain)
 		{
+			if (!Functions.m_ThreadAttach)
+				return nullptr;
+
 			return reinterpret_cast<void* (IL2CPP_CALLING_CONVENTION)(void*)>(Functions.m_ThreadAttach)(m_Domain);
 		}
 
 		void Detach(void* m_Thread)
 		{
+			if (!Functions.m_ThreadDetach || !m_Thread)
+				return;
+
 			reinterpret_cast<void(IL2CPP_CALLING_CONVENTION)(void*)>(Functions.m_ThreadDetach)(m_Thread);
 		}
 	}
