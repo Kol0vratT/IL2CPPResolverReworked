@@ -158,6 +158,35 @@
 #define UNITY_DEBUG_LOGWARN_STR                                     IL2CPP_RStr(UNITY_DEBUG_CLASS"::LogWarning(System.String)")
 #define UNITY_DEBUG_LOGERR_STR                                      IL2CPP_RStr(UNITY_DEBUG_CLASS"::LogError(System.String)")
 
+// Input
+#define UNITY_INPUT_CLASS                                           "UnityEngine.Input"
+
+#define UNITY_INPUT_GETAXIS                                         IL2CPP_RStr(UNITY_INPUT_CLASS"::GetAxis")
+#define UNITY_INPUT_GETAXISRAW                                      IL2CPP_RStr(UNITY_INPUT_CLASS"::GetAxisRaw")
+#define UNITY_INPUT_GETMOUSEBUTTON                                  IL2CPP_RStr(UNITY_INPUT_CLASS"::GetMouseButton")
+#define UNITY_INPUT_GETMOUSEBUTTONDOWN                              IL2CPP_RStr(UNITY_INPUT_CLASS"::GetMouseButtonDown")
+#define UNITY_INPUT_GETMOUSEBUTTONUP                                IL2CPP_RStr(UNITY_INPUT_CLASS"::GetMouseButtonUp")
+#define UNITY_INPUT_GETMOUSEPOSITION                                IL2CPP_RStr(UNITY_INPUT_CLASS"::get_mousePosition")
+#define UNITY_INPUT_GETMOUSEPOSITION_INJECTED                       IL2CPP_RStr(UNITY_INPUT_CLASS"::get_mousePosition_Injected")
+#define UNITY_INPUT_GETTOUCHCOUNT                                   IL2CPP_RStr(UNITY_INPUT_CLASS"::get_touchCount")
+
+// Screen
+#define UNITY_SCREEN_CLASS                                          "UnityEngine.Screen"
+
+#define UNITY_SCREEN_GETWIDTH                                       IL2CPP_RStr(UNITY_SCREEN_CLASS"::get_width")
+#define UNITY_SCREEN_GETHEIGHT                                      IL2CPP_RStr(UNITY_SCREEN_CLASS"::get_height")
+#define UNITY_SCREEN_GETDPI                                         IL2CPP_RStr(UNITY_SCREEN_CLASS"::get_dpi")
+#define UNITY_SCREEN_GETFULLSCREEN                                  IL2CPP_RStr(UNITY_SCREEN_CLASS"::get_fullScreen")
+#define UNITY_SCREEN_SETFULLSCREEN                                  IL2CPP_RStr(UNITY_SCREEN_CLASS"::set_fullScreen")
+
+// Cursor
+#define UNITY_CURSOR_CLASS                                          "UnityEngine.Cursor"
+
+#define UNITY_CURSOR_GETVISIBLE                                     IL2CPP_RStr(UNITY_CURSOR_CLASS"::get_visible")
+#define UNITY_CURSOR_SETVISIBLE                                     IL2CPP_RStr(UNITY_CURSOR_CLASS"::set_visible")
+#define UNITY_CURSOR_GETLOCKSTATE                                   IL2CPP_RStr(UNITY_CURSOR_CLASS"::get_lockState")
+#define UNITY_CURSOR_SETLOCKSTATE                                   IL2CPP_RStr(UNITY_CURSOR_CLASS"::set_lockState")
+
 
 
 
