@@ -20,22 +20,34 @@ namespace Unity
 	public:
 		bool GetDetectCollisions()
 		{
+			if (!this || !m_RigidbodyFunctions.m_GetDetectCollisions)
+				return false;
+
 			void* selfArg = m_RigidbodyFunctions.m_GetDetectCollisions_ThisIsPtr ? this->m_CachedPtr : (void*)this;
+			if (!selfArg) return false;
 			return reinterpret_cast<bool(UNITY_CALLING_CONVENTION)(void*)>(m_RigidbodyFunctions.m_GetDetectCollisions)(selfArg);
 		}
 
 		void SetDetectCollisions(bool m_bDetect)
 		{
+			if (!this || !m_RigidbodyFunctions.m_SetDetectCollisions)
+				return;
+
 			void* selfArg = m_RigidbodyFunctions.m_SetDetectCollisions_ThisIsPtr ? this->m_CachedPtr : (void*)this;
+			if (!selfArg) return;
 			reinterpret_cast<void(UNITY_CALLING_CONVENTION)(void*, bool)>(m_RigidbodyFunctions.m_SetDetectCollisions)(selfArg, m_bDetect);
 		}
 
 		Vector3 GetVelocity()
 		{
+			if (!this)
+				return {};
+
 			if (m_RigidbodyFunctions.m_GetVelocity_Injected)
 			{
 				Vector3 v{};
 				void* selfArg = m_RigidbodyFunctions.m_GetVelocity_ThisIsPtr ? this->m_CachedPtr : (void*)this;
+				if (!selfArg) return {};
 				reinterpret_cast<void(UNITY_CALLING_CONVENTION)(void*, Vector3&)>(m_RigidbodyFunctions.m_GetVelocity_Injected)(selfArg, v);
 				return v;
 			}
@@ -43,6 +55,7 @@ namespace Unity
 			if (m_RigidbodyFunctions.m_GetVelocity_Value)
 			{
 				void* selfArg = m_RigidbodyFunctions.m_GetVelocityValue_ThisIsPtr ? this->m_CachedPtr : (void*)this;
+				if (!selfArg) return {};
 				return reinterpret_cast<Vector3(UNITY_CALLING_CONVENTION)(void*)>(m_RigidbodyFunctions.m_GetVelocity_Value)(selfArg);
 			}
 
@@ -51,9 +64,13 @@ namespace Unity
 
 		void SetVelocity(Vector3 m_vVector)
 		{
+			if (!this)
+				return;
+
 			if (m_RigidbodyFunctions.m_SetVelocity_Injected)
 			{
 				void* selfArg = m_RigidbodyFunctions.m_SetVelocity_ThisIsPtr ? this->m_CachedPtr : (void*)this;
+				if (!selfArg) return;
 				reinterpret_cast<void(UNITY_CALLING_CONVENTION)(void*, Vector3&)>(m_RigidbodyFunctions.m_SetVelocity_Injected)(selfArg, m_vVector);
 				return;
 			}
@@ -61,6 +78,7 @@ namespace Unity
 			if (m_RigidbodyFunctions.m_SetVelocity_Value)
 			{
 				void* selfArg = m_RigidbodyFunctions.m_SetVelocityValue_ThisIsPtr ? this->m_CachedPtr : (void*)this;
+				if (!selfArg) return;
 				reinterpret_cast<void(UNITY_CALLING_CONVENTION)(void*, Vector3)>(m_RigidbodyFunctions.m_SetVelocity_Value)(selfArg, m_vVector);
 			}
 		}
