@@ -177,42 +177,71 @@ namespace Unity
 
         inline int GetSceneCount()
         {
+            if (!m_SceneManagerFunctions.m_GetSceneCount)
+                return 0;
+
             return reinterpret_cast<int(UNITY_CALLING_CONVENTION)()>(
                 m_SceneManagerFunctions.m_GetSceneCount)();
         }
 
         inline Scene GetActiveScene()
         {
+            if (!m_SceneManagerFunctions.m_GetActiveScene)
+                return {};
+
             return reinterpret_cast<Scene(UNITY_CALLING_CONVENTION)()>(
                 m_SceneManagerFunctions.m_GetActiveScene)();
         }
 
         inline bool SetActiveScene(Scene s)
         {
+            if (!m_SceneManagerFunctions.m_SetActiveScene)
+                return false;
+
             return reinterpret_cast<bool(UNITY_CALLING_CONVENTION)(Scene)>(
                 m_SceneManagerFunctions.m_SetActiveScene)(s);
         }
 
         inline Scene GetSceneAt(int index)
         {
+            if (!m_SceneManagerFunctions.m_GetSceneAt)
+                return {};
+
             return reinterpret_cast<Scene(UNITY_CALLING_CONVENTION)(int)>(
                 m_SceneManagerFunctions.m_GetSceneAt)(index);
         }
 
         inline Scene GetSceneByName(const char* name)
         {
+            if (!m_SceneManagerFunctions.m_GetSceneByName || !name)
+                return {};
+
+            System_String* s = IL2CPP::String::New(name);
+            if (!s)
+                return {};
+
             return reinterpret_cast<Scene(UNITY_CALLING_CONVENTION)(System_String*)>(
-                m_SceneManagerFunctions.m_GetSceneByName)(IL2CPP::String::New(name));
+                m_SceneManagerFunctions.m_GetSceneByName)(s);
         }
 
         inline Scene GetSceneByPath(const char* path)
         {
+            if (!m_SceneManagerFunctions.m_GetSceneByPath || !path)
+                return {};
+
+            System_String* s = IL2CPP::String::New(path);
+            if (!s)
+                return {};
+
             return reinterpret_cast<Scene(UNITY_CALLING_CONVENTION)(System_String*)>(
-                m_SceneManagerFunctions.m_GetSceneByPath)(IL2CPP::String::New(path));
+                m_SceneManagerFunctions.m_GetSceneByPath)(s);
         }
 
         inline Scene GetSceneByBuildIndex(int buildIndex)
         {
+            if (!m_SceneManagerFunctions.m_GetSceneByBuildIndex)
+                return {};
+
             return reinterpret_cast<Scene(UNITY_CALLING_CONVENTION)(int)>(
                 m_SceneManagerFunctions.m_GetSceneByBuildIndex)(buildIndex);
         }
@@ -220,15 +249,25 @@ namespace Unity
         // LoadScene returns Scene in Unity API
         inline Scene LoadScene(const char* sceneName, LoadSceneMode mode = LoadSceneMode::Single)
         {
+            if (!sceneName)
+                return {};
+
+            System_String* s = IL2CPP::String::New(sceneName);
+            if (!s)
+                return {};
+
             if (mode == LoadSceneMode::Single && m_SceneManagerFunctions.m_LoadScene_Name)
             {
                 return reinterpret_cast<Scene(UNITY_CALLING_CONVENTION)(System_String*)>(
-                    m_SceneManagerFunctions.m_LoadScene_Name)(IL2CPP::String::New(sceneName));
+                    m_SceneManagerFunctions.m_LoadScene_Name)(s);
             }
 
             // mode overload
+            if (!m_SceneManagerFunctions.m_LoadScene_Name_Mode)
+                return {};
+
             return reinterpret_cast<Scene(UNITY_CALLING_CONVENTION)(System_String*, LoadSceneMode)>(
-                m_SceneManagerFunctions.m_LoadScene_Name_Mode)(IL2CPP::String::New(sceneName), mode);
+                m_SceneManagerFunctions.m_LoadScene_Name_Mode)(s, mode);
         }
 
         inline Scene LoadScene(int buildIndex, LoadSceneMode mode = LoadSceneMode::Single)
@@ -239,20 +278,33 @@ namespace Unity
                     m_SceneManagerFunctions.m_LoadScene_Index)(buildIndex);
             }
 
+            if (!m_SceneManagerFunctions.m_LoadScene_Index_Mode)
+                return {};
+
             return reinterpret_cast<Scene(UNITY_CALLING_CONVENTION)(int, LoadSceneMode)>(
                 m_SceneManagerFunctions.m_LoadScene_Index_Mode)(buildIndex, mode);
         }
 
         inline il2cppObject* LoadSceneAsync(const char* sceneName, LoadSceneMode mode = LoadSceneMode::Single)
         {
+            if (!sceneName)
+                return nullptr;
+
+            System_String* s = IL2CPP::String::New(sceneName);
+            if (!s)
+                return nullptr;
+
             if (mode == LoadSceneMode::Single && m_SceneManagerFunctions.m_LoadSceneAsync_Name)
             {
                 return reinterpret_cast<il2cppObject * (UNITY_CALLING_CONVENTION)(System_String*)>(
-                    m_SceneManagerFunctions.m_LoadSceneAsync_Name)(IL2CPP::String::New(sceneName));
+                    m_SceneManagerFunctions.m_LoadSceneAsync_Name)(s);
             }
 
+            if (!m_SceneManagerFunctions.m_LoadSceneAsync_Name_Mode)
+                return nullptr;
+
             return reinterpret_cast<il2cppObject * (UNITY_CALLING_CONVENTION)(System_String*, LoadSceneMode)>(
-                m_SceneManagerFunctions.m_LoadSceneAsync_Name_Mode)(IL2CPP::String::New(sceneName), mode);
+                m_SceneManagerFunctions.m_LoadSceneAsync_Name_Mode)(s, mode);
         }
 
         inline il2cppObject* LoadSceneAsync(int buildIndex, LoadSceneMode mode = LoadSceneMode::Single)
@@ -263,36 +315,58 @@ namespace Unity
                     m_SceneManagerFunctions.m_LoadSceneAsync_Index)(buildIndex);
             }
 
+            if (!m_SceneManagerFunctions.m_LoadSceneAsync_Index_Mode)
+                return nullptr;
+
             return reinterpret_cast<il2cppObject * (UNITY_CALLING_CONVENTION)(int, LoadSceneMode)>(
                 m_SceneManagerFunctions.m_LoadSceneAsync_Index_Mode)(buildIndex, mode);
         }
 
         inline il2cppObject* UnloadSceneAsync(Scene s)
         {
+            if (!m_SceneManagerFunctions.m_UnloadSceneAsync_Scene)
+                return nullptr;
+
             return reinterpret_cast<il2cppObject * (UNITY_CALLING_CONVENTION)(Scene)>(
                 m_SceneManagerFunctions.m_UnloadSceneAsync_Scene)(s);
         }
 
         inline il2cppObject* UnloadSceneAsync(const char* sceneName)
         {
+            if (!m_SceneManagerFunctions.m_UnloadSceneAsync_Name || !sceneName)
+                return nullptr;
+
+            System_String* s = IL2CPP::String::New(sceneName);
+            if (!s)
+                return nullptr;
+
             return reinterpret_cast<il2cppObject * (UNITY_CALLING_CONVENTION)(System_String*)>(
-                m_SceneManagerFunctions.m_UnloadSceneAsync_Name)(IL2CPP::String::New(sceneName));
+                m_SceneManagerFunctions.m_UnloadSceneAsync_Name)(s);
         }
 
         inline il2cppObject* UnloadSceneAsync(int buildIndex)
         {
+            if (!m_SceneManagerFunctions.m_UnloadSceneAsync_Index)
+                return nullptr;
+
             return reinterpret_cast<il2cppObject * (UNITY_CALLING_CONVENTION)(int)>(
                 m_SceneManagerFunctions.m_UnloadSceneAsync_Index)(buildIndex);
         }
 
         inline void MergeScenes(Scene sourceScene, Scene destinationScene)
         {
+            if (!m_SceneManagerFunctions.m_MergeScenes)
+                return;
+
             reinterpret_cast<void(UNITY_CALLING_CONVENTION)(Scene, Scene)>(
                 m_SceneManagerFunctions.m_MergeScenes)(sourceScene, destinationScene);
         }
 
         inline void MoveGameObjectToScene(CGameObject* go, Scene scene)
         {
+            if (!m_SceneManagerFunctions.m_MoveGameObjectToScene || !go)
+                return;
+
             reinterpret_cast<void(UNITY_CALLING_CONVENTION)(CGameObject*, Scene)>(
                 m_SceneManagerFunctions.m_MoveGameObjectToScene)(go, scene);
         }
