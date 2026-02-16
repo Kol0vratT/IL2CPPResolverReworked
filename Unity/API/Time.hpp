@@ -88,54 +88,81 @@ namespace Unity
 
         inline float GetDeltaTime()
         {
+            if (!m_TimeFunctions.m_GetDeltaTime)
+                return 0.f;
+
             return reinterpret_cast<float(UNITY_CALLING_CONVENTION)()>(
                 m_TimeFunctions.m_GetDeltaTime)();
         }
 
         inline float GetUnscaledDeltaTime()
         {
+            if (!m_TimeFunctions.m_GetUnscaledDeltaTime)
+                return 0.f;
+
             return reinterpret_cast<float(UNITY_CALLING_CONVENTION)()>(
                 m_TimeFunctions.m_GetUnscaledDeltaTime)();
         }
 
         inline float GetTime()
         {
+            if (!m_TimeFunctions.m_GetTime)
+                return 0.f;
+
             return reinterpret_cast<float(UNITY_CALLING_CONVENTION)()>(
                 m_TimeFunctions.m_GetTime)();
         }
 
         inline float GetUnscaledTime()
         {
+            if (!m_TimeFunctions.m_GetUnscaledTime)
+                return 0.f;
+
             return reinterpret_cast<float(UNITY_CALLING_CONVENTION)()>(
                 m_TimeFunctions.m_GetUnscaledTime)();
         }
 
         inline float GetFixedDeltaTime()
         {
+            if (!m_TimeFunctions.m_GetFixedDeltaTime)
+                return 0.f;
+
             return reinterpret_cast<float(UNITY_CALLING_CONVENTION)()>(
                 m_TimeFunctions.m_GetFixedDeltaTime)();
         }
 
         inline void SetFixedDeltaTime(float v)
         {
+            if (!m_TimeFunctions.m_SetFixedDeltaTime)
+                return;
+
             reinterpret_cast<void(UNITY_CALLING_CONVENTION)(float)>(
                 m_TimeFunctions.m_SetFixedDeltaTime)(v);
         }
 
         inline float GetTimeScale()
         {
+            if (!m_TimeFunctions.m_GetTimeScale)
+                return 0.f;
+
             return reinterpret_cast<float(UNITY_CALLING_CONVENTION)()>(
                 m_TimeFunctions.m_GetTimeScale)();
         }
 
         inline void SetTimeScale(float v)
         {
+            if (!m_TimeFunctions.m_SetTimeScale)
+                return;
+
             reinterpret_cast<void(UNITY_CALLING_CONVENTION)(float)>(
                 m_TimeFunctions.m_SetTimeScale)(v);
         }
 
         inline int GetFrameCount()
         {
+            if (!m_TimeFunctions.m_GetFrameCount)
+                return 0;
+
             return reinterpret_cast<int(UNITY_CALLING_CONVENTION)()>(
                 m_TimeFunctions.m_GetFrameCount)();
         }
