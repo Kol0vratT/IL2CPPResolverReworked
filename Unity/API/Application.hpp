@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 namespace Unity
 {
@@ -16,7 +16,8 @@ namespace Unity
 		void* m_GetIdentifier = nullptr;
 		void* m_GetUnityVersion = nullptr;
 
-		void* m_Quit = nullptr; 
+		void* m_Quit = nullptr;
+		bool m_QuitTakesExitCode = false;
 	};
 	inline ApplicationFunctions_t m_ApplicationFunctions;
 
@@ -84,21 +85,26 @@ namespace Unity
 				{ UNITY_APPLICATION_GET_UNITYVERSION, IL2CPP_RStr(UNITY_APPLICATION_CLASS"::get_unityVersion") });
 
 			m_ApplicationFunctions.m_Quit = nullptr;
+			m_ApplicationFunctions.m_QuitTakesExitCode = false;
 			if (void* p = IL2CPP::ResolveUnityMethod(UNITY_APPLICATION_CLASS, "Quit", 1))
 			{
 				m_ApplicationFunctions.m_Quit = p;
+				m_ApplicationFunctions.m_QuitTakesExitCode = true;
 			}
 			else if (void* p = IL2CPP::ResolveCallAny({ UNITY_APPLICATION_QUIT1 }))
 			{
 				m_ApplicationFunctions.m_Quit = p;
+				m_ApplicationFunctions.m_QuitTakesExitCode = true;
 			}
 			else if (void* p0 = IL2CPP::ResolveUnityMethod(UNITY_APPLICATION_CLASS, "Quit", 0))
 			{
 				m_ApplicationFunctions.m_Quit = p0;
+				m_ApplicationFunctions.m_QuitTakesExitCode = false;
 			}
 			else if (void* p0 = IL2CPP::ResolveCallAny({ UNITY_APPLICATION_QUIT0 }))
 			{
 				m_ApplicationFunctions.m_Quit = p0;
+				m_ApplicationFunctions.m_QuitTakesExitCode = false;
 			}
 		}
 
@@ -106,54 +112,81 @@ namespace Unity
 
 		inline int GetTargetFrameRate()
 		{
+			if (!m_ApplicationFunctions.m_GetTargetFrameRate)
+				return 0;
+
 			return reinterpret_cast<int(UNITY_CALLING_CONVENTION)()>(
 				m_ApplicationFunctions.m_GetTargetFrameRate)();
 		}
 
 		inline void SetTargetFrameRate(int v)
 		{
+			if (!m_ApplicationFunctions.m_SetTargetFrameRate)
+				return;
+
 			reinterpret_cast<void(UNITY_CALLING_CONVENTION)(int)>(
 				m_ApplicationFunctions.m_SetTargetFrameRate)(v);
 		}
 
 		inline bool GetIsFocused()
 		{
+			if (!m_ApplicationFunctions.m_GetIsFocused)
+				return false;
+
 			return reinterpret_cast<bool(UNITY_CALLING_CONVENTION)()>(
 				m_ApplicationFunctions.m_GetIsFocused)();
 		}
 
 		inline System_String* GetDataPath()
 		{
+			if (!m_ApplicationFunctions.m_GetDataPath)
+				return nullptr;
+
 			return reinterpret_cast<System_String * (UNITY_CALLING_CONVENTION)()>(
 				m_ApplicationFunctions.m_GetDataPath)();
 		}
 
 		inline System_String* GetPersistentDataPath()
 		{
+			if (!m_ApplicationFunctions.m_GetPersistentDataPath)
+				return nullptr;
+
 			return reinterpret_cast<System_String * (UNITY_CALLING_CONVENTION)()>(
 				m_ApplicationFunctions.m_GetPersistentDataPath)();
 		}
 
 		inline System_String* GetStreamingAssetsPath()
 		{
+			if (!m_ApplicationFunctions.m_GetStreamingAssetsPath)
+				return nullptr;
+
 			return reinterpret_cast<System_String * (UNITY_CALLING_CONVENTION)()>(
 				m_ApplicationFunctions.m_GetStreamingAssetsPath)();
 		}
 
 		inline System_String* GetProductName()
 		{
+			if (!m_ApplicationFunctions.m_GetProductName)
+				return nullptr;
+
 			return reinterpret_cast<System_String * (UNITY_CALLING_CONVENTION)()>(
 				m_ApplicationFunctions.m_GetProductName)();
 		}
 
 		inline System_String* GetIdentifier()
 		{
+			if (!m_ApplicationFunctions.m_GetIdentifier)
+				return nullptr;
+
 			return reinterpret_cast<System_String * (UNITY_CALLING_CONVENTION)()>(
 				m_ApplicationFunctions.m_GetIdentifier)();
 		}
 
 		inline System_String* GetUnityVersion()
 		{
+			if (!m_ApplicationFunctions.m_GetUnityVersion)
+				return nullptr;
+
 			return reinterpret_cast<System_String * (UNITY_CALLING_CONVENTION)()>(
 				m_ApplicationFunctions.m_GetUnityVersion)();
 		}
@@ -163,7 +196,7 @@ namespace Unity
 			if (!m_ApplicationFunctions.m_Quit)
 				return;
 
-			if (IL2CPP::ResolveUnityMethod(UNITY_APPLICATION_CLASS, "Quit", 1) == m_ApplicationFunctions.m_Quit)
+			if (m_ApplicationFunctions.m_QuitTakesExitCode)
 			{
 				reinterpret_cast<void(UNITY_CALLING_CONVENTION)(int)>(m_ApplicationFunctions.m_Quit)(exitCode);
 			}
