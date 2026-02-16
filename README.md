@@ -1,400 +1,413 @@
+# IL2CPP_Resolver Reworked
 
-## IL2CPP Resolver Reworked
+`IL2CPP_Resolver Reworked` is a header-first C++ runtime bridge for Unity IL2CPP games.  
+It resolves IL2CPP exports, resolves managed methods and icalls, and provides a defensive Unity API layer for common engine classes.
 
-A run-time API resolver for IL2CPP Unity.
+This document describes the library itself only. The `IL2CPP_Resolver_TestDLL` project is intentionally not covered here.
 
-`IL2CPP Resolver Reworked` is a C++ runtime resolver for IL2CPP-based Unity games.
-It provides a high-level and low-level API for resolving IL2CPP exports, accessing managed classes, invoking methods, working with fields, strings, and interacting with Unity engine objects.
+## What It Does
 
----
+- Initializes IL2CPP from a loaded game module (`GameAssembly.dll` by default).
+- Resolves required and optional IL2CPP exports with safety checks.
+- Supports export-name obfuscation fallback (ROT mode).
+- Supports custom export resolver callbacks for protected targets.
+- Optionally enables heuristic export-name matching.
+- Resolves managed Unity methods first, then falls back to icalls.
+- Exposes reusable C++ wrappers for many UnityEngine APIs.
+- Adds broad null checks and fallback paths to reduce crash risk across Unity versions.
 
-# SIMPLE DOCUMENTATION
+## Repository Layout (Library Only)
 
----
+- `IL2CPP_Resolver.hpp`
+  - Main include and initialization flow.
+  - Export resolver pipeline.
+  - Unity API initialization entrypoint.
+- `Defines.hpp`
+  - Canonical IL2CPP export names and calling convention macros.
+- `Data.hpp`
+  - Global resolver state (`Globals`, `Functions`).
+- `SystemTypeCache.hpp`
+  - Fast cache for `System.Type` objects by hash/name.
+- `API/`
+  - Core IL2CPP utilities: domain, classes, strings, threads, callbacks, method/icall resolution.
+- `Unity/API/`
+  - UnityEngine wrappers (Application, Camera, Cursor, Debug, GameObject, Input, LayerMask, Object, RenderSettings, Rigidbody, SceneManager, Screen, Time, Transform).
+- `Unity/Structures/`
+  - IL2CPP/Unity data structures (`il2cppObject`, `il2cppClass`, arrays, strings, vectors, quaternions, etc.).
+- `Utils/`
+  - Hashing, vtable patching/search helpers, safe MonoBehaviour resolver helper.
 
-## Quick Example
+## Initialization Pipeline
+
+`IL2CPP::Initialize(bool waitForModule = false, int maxSecondsWait = 60)`:
+
+1. Resolves target module (`IL2CPP_MAIN_MODULE`, then fallback module names).
+2. Detects export naming mode (`None`, `ROT`).
+3. Resolves required IL2CPP exports.  
+   Initialization fails if any required symbol is missing.
+4. Resolves optional/version-dependent exports if available.
+5. Initializes all Unity API wrappers.
+6. Pre-caches queued `System.Type` objects via `SystemTypeCache::Initializer`.
+
+### Required Exports
+
+- `il2cpp_class_from_name`
+- `il2cpp_class_get_fields`
+- `il2cpp_class_get_field_from_name`
+- `il2cpp_class_get_methods`
+- `il2cpp_class_get_method_from_name`
+- `il2cpp_class_get_property_from_name`
+- `il2cpp_class_get_type`
+- `il2cpp_domain_get`
+- `il2cpp_domain_get_assemblies`
+- `il2cpp_string_new`
+- `il2cpp_thread_attach`
+- `il2cpp_thread_detach`
+- `il2cpp_type_get_object`
+- `il2cpp_object_new`
+
+### Optional Exports
+
+- `il2cpp_image_get_class`
+- `il2cpp_image_get_class_count`
+- `il2cpp_resolve_icall` / `il2cpp_codegen_resolve_icall`
+- `il2cpp_free`
+- `il2cpp_method_get_param_name`
+- `il2cpp_method_get_param`
+- `il2cpp_class_from_il2cpp_type` / `il2cpp_class_from_type`
+- `il2cpp_field_static_get_value`
+- `il2cpp_field_static_set_value`
+
+If initialization fails, inspect:
 
 ```cpp
+const char* reason = IL2CPP::UnityAPI::GetLastInitError();
+```
+
+## Export Resolver Flexibility
+
+You can extend/override symbol resolution:
+
+```cpp
+static void* MyExportResolver(HMODULE gameModule, const char* canonicalName)
+{
+    // Your custom logic (manual table, pattern scan, decrypt name, etc.)
+    return nullptr;
+}
+
+IL2CPP::SetCustomExportResolver(&MyExportResolver);
+IL2CPP::SetHeuristicExportResolution(true); // disabled by default
+```
+
+## Core API (`API/`)
+
+### `API/ResolveCall.hpp`
+
+- `IL2CPP::ResolveUnityMethod(className, methodName, argCount)`
+- `IL2CPP::ResolveCall(icallName)`
+- `IL2CPP::ResolveCallCached(icallName)`
+- `IL2CPP::ResolveCallAny({ candidates... })`
+- `IL2CPP::ResolveUnityMethodOrIcall(...)`
+
+Design: prefer managed method pointer resolution (usually more stable), then fallback to icalls.
+
+### `API/Domain.hpp`
+
+- `IL2CPP::Domain::Get()`
+- `IL2CPP::Domain::GetAssemblies(size_t* outCount)`
+
+### `API/Class.hpp`
+
+- Enumerate fields/methods:
+  - `Class::GetFields`, `Class::FetchFields`
+  - `Class::GetMethods`, `Class::FetchMethods`
+- Resolve classes:
+  - `Class::Find("Namespace.Type")`
+  - `Class::GetFromName(image, namespace, name)`
+  - `Class::FetchClasses(...)` (when class count exports exist)
+- Type helpers:
+  - `Class::GetType`, `Class::GetSystemType`
+- Utility helpers:
+  - `Class::Utils::GetFieldOffset`
+  - `Class::Utils::GetMethodPointer` (name+argc and typed overloads)
+  - `Class::Utils::SetStaticField` / `GetStaticField`
+  - `Class::Utils::MethodGetParamName`
+  - `Class::Utils::GetMethodParamType`
+  - `Class::Utils::ClassFromType`
+  - class filtering helpers (`FilterClass`, `FilterClassToMethodPointer`)
+- Base wrapper class `IL2CPP::CClass`:
+  - generic method calls (`CallMethod`, `CallMethodSafe`)
+  - property get/set
+  - field/member get/set by name/offset
+  - obscured-value helpers (`GetObscuredValue`, `SetObscuredValue`)
+
+### `API/String.hpp`
+
+- `IL2CPP::String::New(const char*)` (managed string)
+- `IL2CPP::String::NoGC::New(const char*)` (manual/no-GC object construction)
+
+### `API/Thread.hpp`
+
+- `IL2CPP::Thread::Attach(domain)`
+- `IL2CPP::Thread::Detach(thread)`
+- `IL2CPP::Thread::Create(startFn, endFn)`  
+  Creates native thread and auto attach/detach to IL2CPP domain.
+
+### `API/Callback.hpp`
+
+- Callback hooks for:
+  - `IL2CPP::Callback::OnUpdate::Add(fn)`
+  - `IL2CPP::Callback::OnLateUpdate::Add(fn)`
+- Runtime hook control:
+  - `IL2CPP::Callback::Initialize()`
+  - `IL2CPP::Callback::Uninitialize()`
+
+Internally uses vtable scanning plus function replacement (`Utils/VTable.hpp`).
+
+## Unity API Wrappers (`Unity/API/`)
+
+All wrappers resolve function pointers defensively and generally support both:
+
+- classic object-`this` calling style
+- injected `System.IntPtr`-`this` variants used by newer Unity branches
+
+### `Application.hpp`
+
+- Target frame rate: `GetTargetFrameRate`, `SetTargetFrameRate`
+- Focus state: `GetIsFocused`
+- Paths: `GetDataPath`, `GetPersistentDataPath`, `GetStreamingAssetsPath`
+- Metadata: `GetProductName`, `GetIdentifier`, `GetUnityVersion`
+- Quit: `Quit(int exitCode = 0)` with overload compatibility handling
+
+### `Camera.hpp`
+
+- Static cameras: `Camera::GetCurrent`, `Camera::GetMain`
+- Instance: `GetDepth`, `SetDepth`, `GetFieldOfView`, `SetFieldOfView`
+- Projection helper: `WorldToScreen`
+
+### `Component.hpp`
+
+- `GetGameObject`
+- `GetTransform`
+
+### `Cursor.hpp`
+
+- Visibility: `GetVisible`, `SetVisible`
+- Lock mode: `GetLockState`, `SetLockState`
+- Lock enum:
+  - `Cursor::m_eLockMode::None`
+  - `Cursor::m_eLockMode::Locked`
+  - `Cursor::m_eLockMode::Confined`
+
+### `Debug.hpp`
+
+- `Log`, `LogWarning`, `LogError`
+- Supports object and string paths.
+
+### `GameObject.hpp`
+
+- Static:
+  - `CreatePrimitive`
+  - `Find`
+  - `FindWithTag`
+- Instance:
+  - `AddComponent`
+  - `GetComponent`
+  - `GetComponentInChildren`
+  - `GetComponents`
+  - `GetComponentByIndex`
+  - `GetTransform`
+  - `GetActive`, `SetActive`
+  - `GetLayer`, `SetLayer`
+
+### `Input.hpp`
+
+- Axes: `GetAxis`, `GetAxisRaw`
+- Mouse buttons: `GetMouseButton`, `GetMouseButtonDown`, `GetMouseButtonUp`
+- Mouse position: `GetMousePosition` (injected and value fallback)
+- Touch: `GetTouchCount`
+
+### `LayerMask.hpp`
+
+- `LayerToName`
+- `NameToLayer`
+
+### `Object.hpp`
+
+- Object lifetime/name:
+  - `CObject::Destroy`
+  - `CObject::GetName`
+- Object creation:
+  - `Object::New(il2cppClass*)`
+- Search helpers:
+  - `FindObjectsOfType<T>(type, includeInactive)`
+  - `FindObjectOfType<T>(...)`
+- Supports legacy `FindObjectsOfType` and modern `FindObjectsByType` fallbacks.
+
+### `RenderSettings.hpp`
+
+- Fog: `GetFog`, `SetFog`
+- Fog color: `GetFogColor`, `SetFogColor`
+- Ambient light: `GetAmbientLight`, `SetAmbientLight`
+- Skybox: `GetSkybox`, `SetSkybox`
+- Sun light: `GetSun`, `SetSun`
+
+### `Rigidbody.hpp`
+
+- `GetDetectCollisions`, `SetDetectCollisions`
+- `GetVelocity`, `SetVelocity`  
+  Injected and value-style fallbacks are both supported.
+
+### `SceneManager.hpp`
+
+- Scene info:
+  - `GetSceneCount`
+  - `GetActiveScene`, `SetActiveScene`
+  - `GetSceneAt`
+  - `GetSceneByName`, `GetSceneByPath`, `GetSceneByBuildIndex`
+- Scene loading:
+  - `LoadScene(name/index, mode)`
+  - `LoadSceneAsync(name/index, mode)`
+- Scene unloading:
+  - `UnloadSceneAsync(scene/name/index)`
+- Scene operations:
+  - `MergeScenes`
+  - `MoveGameObjectToScene`
+
+### `Screen.hpp`
+
+- `GetWidth`, `GetHeight`, `GetDpi`
+- `GetFullScreen`, `SetFullScreen`
+
+### `Time.hpp`
+
+- `GetDeltaTime`, `GetUnscaledDeltaTime`
+- `GetTime`, `GetUnscaledTime`
+- `GetFixedDeltaTime`, `SetFixedDeltaTime`
+- `GetTimeScale`, `SetTimeScale`
+- `GetFrameCount`
+
+### `Transform.hpp`
+
+- Hierarchy:
+  - `GetParent`, `GetRoot`
+  - `GetChild`, `GetChildCount`
+  - `FindChild`
+- World/local transforms:
+  - `GetPosition`, `SetPosition`
+  - `GetRotation`, `SetRotation`
+  - `GetLocalPosition`, `SetLocalPosition`
+  - `GetLocalScale`, `SetLocalScale`
+
+## Utility Layer (`Utils/`)
+
+- `Utils/Hash.hpp`
+  - Runtime and compile-time hashing.
+  - `IL2CPP_HASH("...")` macro.
+- `Utils/VTable.hpp`
+  - Replace vtable function pointers safely.
+  - Exact and masked opcode scanning.
+- `Utils/Helper.hpp`
+  - `Helper::GetMonoBehaviour()` using safe object-based search route.
+
+## Data Structures (`Unity/Structures/`)
+
+- Core IL2CPP objects/classes/types/methods/fields/properties.
+- Arrays/lists/dictionaries:
+  - `il2cppArray<T>`
+  - `il2cppList<T>`
+  - `il2cppDictionary<TKey, TValue>`
+- String wrapper:
+  - `System_String` with UTF-8 conversion helper.
+- Engine math structs:
+  - `Vector2/3/4`, `Quaternion`, `Color`, `Rect`, `Matrix4x4`, etc.
+
+## Version Layout Notes
+
+The IL2CPP type/method layout differs across Unity generations.
+
+- New layout switch used by code paths: `UNITY_VERSION_2022_3_8F1`
+- If not defined, legacy layout branches are used.
+
+Define layout macros before including `IL2CPP_Resolver.hpp` in your project to match your target runtime.
+
+## Quick Start Example
+
+```cpp
+#define IL2CPP_MAIN_MODULE "GameAssembly.dll" // optional override
 #include "IL2CPP_Resolver.hpp"
 
-void SomeFunction()
+void RuntimeEntry()
 {
-    IL2CPP::Initialize(); // This needs to be called once!
+    if (!IL2CPP::Initialize(true, 90))
+    {
+        const char* reason = IL2CPP::UnityAPI::GetLastInitError();
+        return;
+    }
 
-    Unity::CGameObject* m_Local = Unity::GameObject::Find("LocalPlayer");
-    Unity::CComponent* m_LocalData = m_Local->GetComponent("PlayerData");
-    m_LocalData->SetMemberValue<bool>("CanFly", true);
+    // Unity metadata
+    if (auto* v = Unity::Application::GetUnityVersion())
+    {
+        std::string unityVersion = v->ToString();
+    }
+
+    // Camera control
+    if (Unity::CCamera* cam = Unity::Camera::GetMain())
+    {
+        cam->SetFieldOfView(95.0f);
+    }
+
+    // Cursor unlock helpers
+    Unity::Cursor::SetVisible(true);
+    Unity::Cursor::SetLockState(Unity::Cursor::m_eLockMode::None);
+
+    // Time API
+    Unity::Time::SetTimeScale(0.75f);
 }
 ```
 
----
-
-## Registering OnUpdate Callback
+## Callback Example
 
 ```cpp
-void OurUpdateFunction()
+void OnUpdateTick()
 {
-    // Your special code...
+    // Called every Update after hook initialization.
 }
 
-void OnLoad()
+void InstallCallbacks()
 {
-    IL2CPP::Initialize();
-
+    IL2CPP::Callback::OnUpdate::Add(reinterpret_cast<void*>(&OnUpdateTick));
     IL2CPP::Callback::Initialize();
-    IL2CPP::Callback::OnUpdate::Add(OurUpdateFunction);
 }
-```
 
----
-
-## Initialization
-
-### IL2CPP::Initialize
-
-```cpp
-bool IL2CPP::Initialize();
-```
-
-Initializes the IL2CPP resolver.
-This function **must be called once** before using any other API.
-
-What this function does:
-
-* Resolves `GameAssembly.dll`
-* Resolves all required IL2CPP exports
-* Initializes IL2CPP domain
-* Attaches current thread
-* Caches base system types
-
-Example:
-
-```cpp
-if (!IL2CPP::Initialize())
+void RemoveCallbacks()
 {
-    // Initialization failed
+    IL2CPP::Callback::Uninitialize();
 }
 ```
 
----
-
-## Domain API
-
-### IL2CPP::Domain::Get
+## Class/Method Resolution Example
 
 ```cpp
-Il2CppDomain* IL2CPP::Domain::Get();
-```
+void* p = IL2CPP::ResolveUnityMethodOrIcall(
+    "UnityEngine.Time",
+    "set_timeScale",
+    1,
+    { "UnityEngine.Time::set_timeScale" }
+);
 
-Returns the current IL2CPP domain.
-
----
-
-### IL2CPP::Domain::GetAssemblies
-
-```cpp
-std::vector<Il2CppAssembly*> IL2CPP::Domain::GetAssemblies();
-```
-
-Returns a list of all loaded assemblies.
-
-Example:
-
-```cpp
-auto assemblies = IL2CPP::Domain::GetAssemblies();
-for (auto assembly : assemblies)
+if (p)
 {
-    printf("Assembly: %s\n", assembly->image->name);
+    reinterpret_cast<void(UNITY_CALLING_CONVENTION)(float)>(p)(1.0f);
 }
 ```
 
----
-
-## Class API
-
-### IL2CPP::Class::Find
-
-```cpp
-Il2CppClass* IL2CPP::Class::Find(
-    const char* namespaze,
-    const char* className,
-    const char* assemblyName = nullptr
-);
-```
-
-Finds an IL2CPP class by namespace and name.
-
-Example:
-
-```cpp
-Il2CppClass* playerClass =
-    IL2CPP::Class::Find("Game", "Player");
-```
-
----
-
-### IL2CPP::Class::GetMethod
-
-```cpp
-MethodInfo* IL2CPP::Class::GetMethod(
-    Il2CppClass* klass,
-    const char* methodName,
-    int argsCount = -1
-);
-```
-
-Returns a method from the specified class.
-
-Example:
-
-```cpp
-MethodInfo* jumpMethod =
-    IL2CPP::Class::GetMethod(playerClass, "Jump", 0);
-```
-
----
-
-### IL2CPP::Class::GetField
-
-```cpp
-FieldInfo* IL2CPP::Class::GetField(
-    Il2CppClass* klass,
-    const char* fieldName
-);
-```
-
-Returns a field from the specified class.
-
----
-
-## Method Invocation
-
-### IL2CPP::ResolveCall::Invoke
-
-```cpp
-template<typename Ret, typename... Args>
-Ret IL2CPP::ResolveCall::Invoke(
-    MethodInfo* method,
-    void* instance,
-    Args... args
-);
-```
-
-Invokes a managed IL2CPP method.
-
-Example:
-
-```cpp
-bool result = IL2CPP::ResolveCall::Invoke<bool>(
-    someMethod,
-    instance,
-    123
-);
-```
-
----
-
-## String API
-
-### IL2CPP::String::New
-
-```cpp
-Il2CppString* IL2CPP::String::New(const char* value);
-```
-
-Creates a managed `System.String`.
-
-Example:
-
-```cpp
-Il2CppString* str = IL2CPP::String::New("Hello World");
-```
-
----
-
-### IL2CPP::String::ToChars
-
-```cpp
-std::string IL2CPP::String::ToChars(Il2CppString* value);
-```
-
-Converts `System.String` to `std::string`.
-
----
-
-## Callback System
-
-### IL2CPP::Callback::Initialize
-
-```cpp
-void IL2CPP::Callback::Initialize();
-```
-
-Initializes the callback system.
-Must be called after `IL2CPP::Initialize()`.
-
----
-
-### IL2CPP::Callback::OnUpdate::Add
-
-```cpp
-void IL2CPP::Callback::OnUpdate::Add(void(*callback)());
-```
-
-Registers a function that will be executed every Unity `Update()`.
-
-Example:
-
-```cpp
-void UpdateLogic()
-{
-    // Code executed every frame
-}
-
-void Init()
-{
-    IL2CPP::Initialize();
-    IL2CPP::Callback::Initialize();
-    IL2CPP::Callback::OnUpdate::Add(UpdateLogic);
-}
-```
-
----
-
-## Unity API
-
-All Unity wrappers are located in the `Unity` namespace.
-
----
-
-## Unity::GameObject
-
-### GameObject::Find
-
-```cpp
-static CGameObject* Unity::GameObject::Find(const char* name);
-```
-
-Finds a `GameObject` by name.
-
-Example:
-
-```cpp
-Unity::CGameObject* obj =
-    Unity::GameObject::Find("Player");
-```
-
----
-
-### GameObject::GetComponent
-
-```cpp
-Unity::CComponent* GetComponent(const char* componentName);
-```
-
-Returns a component from the game object.
-
-Example:
-
-```cpp
-auto rigidbody = obj->GetComponent("Rigidbody");
-```
-
----
-
-## Unity::Component
-
-### SetMemberValue
-
-```cpp
-template<typename T>
-void SetMemberValue(const char* fieldName, T value);
-```
-
-Sets the value of a managed field.
-
-Example:
-
-```cpp
-component->SetMemberValue<float>("Speed", 10.0f);
-```
-
----
-
-## Unity::Transform
-
-Supported operations:
-
-* GetPosition
-* SetPosition
-* GetRotation
-* SetRotation
-* GetForward
-
-Example:
-
-```cpp
-auto transform = obj->GetTransform();
-transform->SetPosition({ 0.f, 5.f, 0.f });
-```
-
----
-
-## Unity::Time
-
-```cpp
-float Unity::Time::GetDeltaTime();
-float Unity::Time::GetTime();
-```
-
----
-
-## Unity::Camera
-
-```cpp
-static CCamera* Unity::Camera::GetMain();
-```
-
----
-
-## Unity Version Compatibility
-
-By default, the resolver targets **Unity 2022.3.8f1 and newer**.
-
-To support older Unity versions, define:
-
-```cpp
-#define UNITY_VERSION_PRE_2022_3_8F1
-#include "IL2CPP_Resolver.hpp"
-```
-
----
-
-## Configuration
-
-### Custom GameAssembly Name
-
-```cpp
-#define IL2CPP_MAIN_MODULE "CustomGameAssembly.dll"
-```
-
----
-
-### String Obfuscation Support
-
-```cpp
-#define IL2CPP_RStr(x) xorstr_(x)
-```
-
----
-
-## Summary
-
-`IL2CPP Resolver Reworked` provides:
-
-* Runtime IL2CPP resolving
-* Clean C++ API
-* Unity engine wrappers
-* Safe managed method invocation
-* Minimal overhead
-* No hardcoded offsets
+## Safety Model
+
+- Most wrappers perform null checks before invoking pointers.
+- Unity API wrappers keep separate pointers for multiple call signatures.
+- Optional exports are not treated as hard failures.
+- Resolver cache can be rebuilt per init attempt.
+- Method-first resolution reduces dependency on unstable icall names.
+
+This gives safer behavior across mixed Unity/IL2CPP versions and modified builds, while still allowing manual resolver extension for heavily protected games.
