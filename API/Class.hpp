@@ -6,6 +6,9 @@ namespace IL2CPP
     {
         Unity::il2cppFieldInfo* GetFields(Unity::il2cppClass* m_pClass, void** m_pIterator)
         {
+            if (!Functions.m_ClassGetFields || !m_pClass)
+                return nullptr;
+
             return reinterpret_cast<Unity::il2cppFieldInfo * (IL2CPP_CALLING_CONVENTION)(void*, void**)>(Functions.m_ClassGetFields)(m_pClass, m_pIterator);
         }
 
@@ -25,6 +28,9 @@ namespace IL2CPP
 
         Unity::il2cppMethodInfo* GetMethods(Unity::il2cppClass* m_pClass, void** m_pIterator)
         {
+            if (!Functions.m_ClassGetMethods || !m_pClass)
+                return nullptr;
+
             return reinterpret_cast<Unity::il2cppMethodInfo * (IL2CPP_CALLING_CONVENTION)(void*, void**)>(Functions.m_ClassGetMethods)(m_pClass, m_pIterator);
         }
 
@@ -44,16 +50,25 @@ namespace IL2CPP
 
         Unity::il2cppType* GetType(Unity::il2cppClass* m_pClass)
         {
+            if (!Functions.m_ClassGetType || !m_pClass)
+                return nullptr;
+
             return reinterpret_cast<Unity::il2cppType * (IL2CPP_CALLING_CONVENTION)(void*)>(Functions.m_ClassGetType)(m_pClass);
         }
 
         Unity::il2cppObject* GetSystemType(Unity::il2cppClass* m_pClass)
         {
+            if (!Functions.m_TypeGetObject || !m_pClass)
+                return nullptr;
+
             return reinterpret_cast<Unity::il2cppObject * (IL2CPP_CALLING_CONVENTION)(void*)>(Functions.m_TypeGetObject)(GetType(m_pClass));
         }
 
         Unity::il2cppClass* GetFromName(Unity::il2cppImage* m_pImage, const char* m_pNamespace, const char* m_pName)
         {
+            if (!Functions.m_ClassFromName || !m_pImage || !m_pName)
+                return nullptr;
+
             return reinterpret_cast<Unity::il2cppClass * (IL2CPP_CALLING_CONVENTION)(void*, const char*, const char*)>(Functions.m_ClassFromName)(m_pImage, m_pNamespace, m_pName);
         }
 
@@ -106,6 +121,9 @@ namespace IL2CPP
         void FetchClasses(std::vector<Unity::il2cppClass*>* m_pVector, const char* m_pModuleName, const char* m_pNamespace)
         {
             m_pVector->clear();
+
+            if (!Functions.m_ImageGetClassCount || !Functions.m_ImageGetClass)
+                return;
 
             size_t m_sAssembliesCount = 0U;
             Unity::il2cppAssembly** m_pAssemblies = Domain::GetAssemblies(&m_sAssembliesCount);
@@ -172,6 +190,9 @@ namespace IL2CPP
             }
 
             void SetStaticField(Unity::il2cppClass* m_pClass, const char* m_pMemberName, void* m_pValue) {
+                if (!Functions.m_ClassGetFieldFromName || !Functions.m_FieldStaticSetValue || !m_pClass || !m_pMemberName)
+                    return;
+
                 Unity::il2cppFieldInfo* m_pField = reinterpret_cast<Unity::il2cppFieldInfo * (IL2CPP_CALLING_CONVENTION)(void*, const char*)>(Functions.m_ClassGetFieldFromName)(m_pClass, m_pMemberName);
                 if (m_pField)
                     reinterpret_cast<void (IL2CPP_CALLING_CONVENTION)(Unity::il2cppFieldInfo*, void*)>(Functions.m_FieldStaticSetValue)(m_pField, m_pValue);
@@ -184,6 +205,9 @@ namespace IL2CPP
             }
 
             void* GetStaticField(Unity::il2cppClass* m_pClass, const char* m_pMemberName) {
+                if (!Functions.m_ClassGetFieldFromName || !Functions.m_FieldStaticGetValue || !m_pClass || !m_pMemberName)
+                    return nullptr;
+
                 Unity::il2cppFieldInfo* m_pField = reinterpret_cast<Unity::il2cppFieldInfo * (IL2CPP_CALLING_CONVENTION)(void*, const char*)>(Functions.m_ClassGetFieldFromName)(m_pClass, m_pMemberName);
                 void* m_pValue = nullptr;
                 if (m_pField)
@@ -203,6 +227,9 @@ namespace IL2CPP
 
             void* GetMethodPointer(Unity::il2cppClass* m_pClass, const char* m_pMethodName, int m_iArgs = -1)
             {
+                if (!Functions.m_ClassGetMethodFromName || !m_pClass || !m_pMethodName)
+                    return nullptr;
+
                 Unity::il2cppMethodInfo* pMethod = reinterpret_cast<Unity::il2cppMethodInfo * (IL2CPP_CALLING_CONVENTION)(void*, const char*, int)>(Functions.m_ClassGetMethodFromName)(m_pClass, m_pMethodName, m_iArgs);
                 if (!pMethod) return nullptr;
 
@@ -220,14 +247,14 @@ namespace IL2CPP
 
             const char* MethodGetParamName(Unity::il2cppMethodInfo* m_pMethodInfo, uint32_t index)
             {
-                if (index >= m_pMethodInfo->m_uArgsCount)
+                if (!Functions.m_MethodGetParamName || !m_pMethodInfo || index >= m_pMethodInfo->m_uArgsCount)
                     return nullptr;
 
                 return reinterpret_cast<const char * (IL2CPP_CALLING_CONVENTION)(void*, uint32_t)>(Functions.m_MethodGetParamName)(m_pMethodInfo, index);
             }
 
             Unity::il2cppType* GetMethodParamType(Unity::il2cppMethodInfo* m_pMethodInfo, uint32_t index) {
-                if (index >= m_pMethodInfo->m_uArgsCount)
+                if (!Functions.m_MethodGetParam || !m_pMethodInfo || index >= m_pMethodInfo->m_uArgsCount)
                     return nullptr;
 
                 return reinterpret_cast<Unity::il2cppType * (IL2CPP_CALLING_CONVENTION)(void*, uint32_t)>(Functions.m_MethodGetParam)(m_pMethodInfo, index);
@@ -235,6 +262,9 @@ namespace IL2CPP
 
             Unity::il2cppClass* ClassFromType(Unity::il2cppType * type)
             {
+                if (!Functions.m_ClassFromIl2cppType || !type)
+                    return nullptr;
+
                 return reinterpret_cast<Unity::il2cppClass * (IL2CPP_CALLING_CONVENTION)(void*)>(Functions.m_ClassFromIl2cppType)(type);
             }
 
@@ -396,17 +426,29 @@ namespace IL2CPP
 
         m_eClassPropType GetPropType(const char* m_pPropType)
         {
-            Unity::il2cppFieldInfo* pField = reinterpret_cast<Unity::il2cppFieldInfo*(IL2CPP_CALLING_CONVENTION)(void*, const char*)>(Functions.m_ClassGetFieldFromName)(m_Object.m_pClass, m_pPropType);
-            if (pField)
-                return m_eClassPropType::Field;
+            if (!m_pPropType)
+                return m_eClassPropType::Unknown;
 
-            Unity::il2cppPropertyInfo* pProperty = reinterpret_cast<Unity::il2cppPropertyInfo*(IL2CPP_CALLING_CONVENTION)(void*, const char*)>(Functions.m_ClassGetPropertyFromName)(m_Object.m_pClass, m_pPropType);
-            if (pProperty)
-                return m_eClassPropType::Property;
+            if (Functions.m_ClassGetFieldFromName)
+            {
+                Unity::il2cppFieldInfo* pField = reinterpret_cast<Unity::il2cppFieldInfo*(IL2CPP_CALLING_CONVENTION)(void*, const char*)>(Functions.m_ClassGetFieldFromName)(m_Object.m_pClass, m_pPropType);
+                if (pField)
+                    return m_eClassPropType::Field;
+            }
 
-            Unity::il2cppMethodInfo* pMethod = reinterpret_cast<Unity::il2cppMethodInfo*(IL2CPP_CALLING_CONVENTION)(void*, const char*, int)>(Functions.m_ClassGetMethodFromName)(m_Object.m_pClass, m_pPropType, -1);
-            if (pMethod)
-                return m_eClassPropType::Method;
+            if (Functions.m_ClassGetPropertyFromName)
+            {
+                Unity::il2cppPropertyInfo* pProperty = reinterpret_cast<Unity::il2cppPropertyInfo*(IL2CPP_CALLING_CONVENTION)(void*, const char*)>(Functions.m_ClassGetPropertyFromName)(m_Object.m_pClass, m_pPropType);
+                if (pProperty)
+                    return m_eClassPropType::Property;
+            }
+
+            if (Functions.m_ClassGetMethodFromName)
+            {
+                Unity::il2cppMethodInfo* pMethod = reinterpret_cast<Unity::il2cppMethodInfo*(IL2CPP_CALLING_CONVENTION)(void*, const char*, int)>(Functions.m_ClassGetMethodFromName)(m_Object.m_pClass, m_pPropType, -1);
+                if (pMethod)
+                    return m_eClassPropType::Method;
+            }
 
             return m_eClassPropType::Unknown;
         }
@@ -442,6 +484,12 @@ namespace IL2CPP
         template<typename T>
         T GetPropertyValue(const char* m_pPropertyName)
         {
+            if (!Functions.m_ClassGetPropertyFromName || !m_Object.m_pClass || !m_pPropertyName)
+            {
+                T tDefault = {};
+                return tDefault;
+            }
+
             Unity::il2cppPropertyInfo* pProperty = reinterpret_cast<Unity::il2cppPropertyInfo * (IL2CPP_CALLING_CONVENTION)(void*, const char*)>(Functions.m_ClassGetPropertyFromName)(m_Object.m_pClass, m_pPropertyName);
             if (pProperty && pProperty->m_pGet)
                 return reinterpret_cast<T(UNITY_CALLING_CONVENTION)(void*)>(pProperty->m_pGet->m_pMethodPointer)(this);
@@ -453,6 +501,9 @@ namespace IL2CPP
         template<typename T>
         void SetPropertyValue(const char* m_pPropertyName, T m_tValue)
         {
+            if (!Functions.m_ClassGetPropertyFromName || !m_Object.m_pClass || !m_pPropertyName)
+                return;
+
             Unity::il2cppPropertyInfo* pProperty = reinterpret_cast<Unity::il2cppPropertyInfo * (IL2CPP_CALLING_CONVENTION)(void*, const char*)>(Functions.m_ClassGetPropertyFromName)(m_Object.m_pClass, m_pPropertyName);
             if (pProperty && pProperty->m_pSet)
                 return reinterpret_cast<void(UNITY_CALLING_CONVENTION)(void*, T)>(pProperty->m_pSet->m_pMethodPointer)(this, m_tValue);
@@ -494,6 +545,12 @@ namespace IL2CPP
         template<typename T>
         T GetMemberValue(const char* m_pMemberName)
         {
+            if (!Functions.m_ClassGetFieldFromName || !m_Object.m_pClass || !m_pMemberName)
+            {
+                T tDefault = {};
+                return tDefault;
+            }
+
             Unity::il2cppFieldInfo* pField = reinterpret_cast<Unity::il2cppFieldInfo * (IL2CPP_CALLING_CONVENTION)(void*, const char*)>(Functions.m_ClassGetFieldFromName)(m_Object.m_pClass, m_pMemberName);
             if (pField)
             {
@@ -509,6 +566,9 @@ namespace IL2CPP
         template<typename T>
         void SetMemberValue(const char* m_pMemberName, T m_tValue)
         {
+            if (!Functions.m_ClassGetFieldFromName || !m_Object.m_pClass || !m_pMemberName)
+                return;
+
             Unity::il2cppFieldInfo* pField = reinterpret_cast<Unity::il2cppFieldInfo * (IL2CPP_CALLING_CONVENTION)(void*, const char*)>(Functions.m_ClassGetFieldFromName)(m_Object.m_pClass, m_pMemberName);
             if (pField)
             {
@@ -563,6 +623,12 @@ namespace IL2CPP
         template<typename T>
         T GetObscuredValue(const char* m_pMemberName)
         {
+            if (!Functions.m_ClassGetFieldFromName || !m_Object.m_pClass || !m_pMemberName)
+            {
+                T m_tDefault = {};
+                return m_tDefault;
+            }
+
             Unity::il2cppFieldInfo* m_pField = reinterpret_cast<Unity::il2cppFieldInfo * (IL2CPP_CALLING_CONVENTION)(void*, const char*)>(Functions.m_ClassGetFieldFromName)(m_Object.m_pClass, m_pMemberName);
             return GetObscuredViaOffset<T>(m_pField ? m_pField->m_iOffset : -1);
         }
@@ -605,6 +671,9 @@ namespace IL2CPP
         template<typename T>
         void SetObscuredValue(const char* m_pMemberName, T m_tValue)
         {
+            if (!Functions.m_ClassGetFieldFromName || !m_Object.m_pClass || !m_pMemberName)
+                return;
+
             Unity::il2cppFieldInfo* m_pField = reinterpret_cast<Unity::il2cppFieldInfo * (IL2CPP_CALLING_CONVENTION)(void*, const char*)>(Functions.m_ClassGetFieldFromName)(m_Object.m_pClass, m_pMemberName);
             if (!m_pField)
                 return;
