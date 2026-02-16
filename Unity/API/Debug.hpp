@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 namespace Unity
 {
@@ -90,7 +90,12 @@ namespace Unity
 
 		inline void Log(const char* text)
 		{
+			if (!text)
+				text = "";
+
 			System_String* s = IL2CPP::String::New(text);
+			if (!s)
+				return;
 
 			if (m_DebugFunctions.m_LogStr)
 			{
@@ -104,7 +109,12 @@ namespace Unity
 
 		inline void LogWarning(const char* text)
 		{
+			if (!text)
+				text = "";
+
 			System_String* s = IL2CPP::String::New(text);
+			if (!s)
+				return;
 
 			if (m_DebugFunctions.m_LogWarningStr)
 			{
@@ -118,7 +128,12 @@ namespace Unity
 
 		inline void LogError(const char* text)
 		{
+			if (!text)
+				text = "";
+
 			System_String* s = IL2CPP::String::New(text);
+			if (!s)
+				return;
 
 			if (m_DebugFunctions.m_LogErrorStr)
 			{
