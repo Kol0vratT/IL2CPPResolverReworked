@@ -23,31 +23,58 @@ namespace Unity
 	public:
 		float GetDepth()
 		{
+			if (!this || !m_CameraFunctions.m_GetDepth)
+				return 0.f;
+
 			void* selfArg = m_CameraFunctions.m_GetDepth_ThisIsPtr ? this->m_CachedPtr : (void*)this;
+			if (!selfArg) return 0.f;
 			return reinterpret_cast<float(UNITY_CALLING_CONVENTION)(void*)>(m_CameraFunctions.m_GetDepth)(selfArg);
 		}
 
 		void SetDepth(float m_fValue)
 		{
+			if (!this || !m_CameraFunctions.m_SetDepth)
+				return;
+
 			void* selfArg = m_CameraFunctions.m_SetDepth_ThisIsPtr ? this->m_CachedPtr : (void*)this;
+			if (!selfArg) return;
 			reinterpret_cast<void(UNITY_CALLING_CONVENTION)(void*, float)>(m_CameraFunctions.m_SetDepth)(selfArg, m_fValue);
 		}
 
 		float GetFieldOfView()
 		{
+			if (!this || !m_CameraFunctions.m_GetFieldOfView)
+				return 0.f;
+
 			void* selfArg = m_CameraFunctions.m_GetFieldOfView_ThisIsPtr ? this->m_CachedPtr : (void*)this;
+			if (!selfArg) return 0.f;
 			return reinterpret_cast<float(UNITY_CALLING_CONVENTION)(void*)>(m_CameraFunctions.m_GetFieldOfView)(selfArg);
 		}
 
 		void SetFieldOfView(float m_fValue)
 		{
+			if (!this || !m_CameraFunctions.m_SetFieldOfView)
+				return;
+
 			void* selfArg = m_CameraFunctions.m_SetFieldOfView_ThisIsPtr ? this->m_CachedPtr : (void*)this;
+			if (!selfArg) return;
 			reinterpret_cast<void(UNITY_CALLING_CONVENTION)(void*, float)>(m_CameraFunctions.m_SetFieldOfView)(selfArg, m_fValue);
 		}
 
 		void WorldToScreen(Vector3& m_vWorld, Vector3& m_vScreen, int m_iEye = 2)
 		{
+			if (!this || !m_CameraFunctions.m_WorldToScreen)
+			{
+				m_vScreen = {};
+				return;
+			}
+
 			void* selfArg = m_CameraFunctions.m_WorldToScreen_ThisIsPtr ? this->m_CachedPtr : (void*)this;
+			if (!selfArg)
+			{
+				m_vScreen = {};
+				return;
+			}
 			reinterpret_cast<void(UNITY_CALLING_CONVENTION)(void*, Vector3&, int, Vector3&)>(m_CameraFunctions.m_WorldToScreen)(selfArg, m_vWorld, m_iEye, m_vScreen);
 		}
 	};
@@ -140,11 +167,17 @@ namespace Unity
 
 		inline CCamera* GetCurrent()
 		{
+			if (!m_CameraFunctions.m_GetCurrent)
+				return nullptr;
+
 			return reinterpret_cast<CCamera * (UNITY_CALLING_CONVENTION)()>(m_CameraFunctions.m_GetCurrent)();
 		}
 
 		inline CCamera* GetMain()
 		{
+			if (!m_CameraFunctions.m_GetMain)
+				return nullptr;
+
 			return reinterpret_cast<CCamera * (UNITY_CALLING_CONVENTION)()>(m_CameraFunctions.m_GetMain)();
 		}
 	}
