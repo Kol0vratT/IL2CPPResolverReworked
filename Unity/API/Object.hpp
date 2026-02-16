@@ -17,11 +17,17 @@ namespace Unity
 	public:
 		void Destroy(float fTimeDelay = 0.f)
 		{
+			if (!this || !m_ObjectFunctions.m_Destroy)
+				return;
+
 			reinterpret_cast<void(UNITY_CALLING_CONVENTION)(void*, float)>(m_ObjectFunctions.m_Destroy)(this, fTimeDelay);
 		}
 
 		System_String* GetName()
 		{
+			if (!this || !m_ObjectFunctions.m_GetName)
+				return nullptr;
+
 			return reinterpret_cast<System_String * (UNITY_CALLING_CONVENTION)(void*)>(m_ObjectFunctions.m_GetName)(this);
 		}
 	};
@@ -64,12 +70,18 @@ namespace Unity
 
 		static il2cppObject* New(il2cppClass* m_pClass)
 		{
+			if (!IL2CPP::Functions.m_pObjectNew || !m_pClass)
+				return nullptr;
+
 			return reinterpret_cast<Unity::il2cppObject * (UNITY_CALLING_CONVENTION)(void*)>(IL2CPP::Functions.m_pObjectNew)(m_pClass);
 		}
 
 		template<typename T>
 		static il2cppArray<T*>* FindObjectsOfType(il2cppObject* m_pSystemType, bool m_bIncludeInactive = false)
 		{
+			if (!m_pSystemType)
+				return nullptr;
+
 			// Preferred: legacy signature FindObjectsOfType(Type, bool)
 			if (m_ObjectFunctions.m_FindObjectsOfType)
 				return reinterpret_cast<Unity::il2cppArray<T*>*(UNITY_CALLING_CONVENTION)(void*, bool)>(m_ObjectFunctions.m_FindObjectsOfType)(m_pSystemType, m_bIncludeInactive);
@@ -89,6 +101,9 @@ namespace Unity
 		template<typename T>
 		static il2cppArray<T*>* FindObjectsOfType(const char* m_pSystemTypeName, bool m_bIncludeInactive = false)
 		{
+			if (!m_pSystemTypeName)
+				return nullptr;
+
 			il2cppClass* m_pClass = IL2CPP::Class::Find(m_pSystemTypeName);
 			if (!m_pClass) return nullptr;
 
@@ -107,6 +122,9 @@ namespace Unity
 		template<typename T>
 		static T* FindObjectOfType(const char* m_pSystemTypeName, bool m_bIncludeInactive = false)
 		{
+			if (!m_pSystemTypeName)
+				return nullptr;
+
 			il2cppClass* m_pClass = IL2CPP::Class::Find(m_pSystemTypeName);
 			if (!m_pClass) return nullptr;
 
