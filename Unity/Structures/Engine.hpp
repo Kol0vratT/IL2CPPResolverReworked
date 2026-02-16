@@ -182,8 +182,10 @@ namespace Unity
 	{
 		float r, g, b, a;
 
-		Color() { r = g = b = a = 0.f; }
-		Color(float fRed = 0.f, float fGreen = 0.f, float fBlue = 0.f, float fAlpha = 1.f) { r = fRed; g = fGreen; b = fBlue; a = fAlpha; }
+		Color(float fRed = 0.f, float fGreen = 0.f, float fBlue = 0.f, float fAlpha = 1.f)
+		{
+			r = fRed; g = fGreen; b = fBlue; a = fAlpha;
+		}
 	};
 
 	struct Matrix4x4
