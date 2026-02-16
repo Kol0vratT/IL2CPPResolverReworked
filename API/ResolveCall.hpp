@@ -23,6 +23,9 @@ namespace IL2CPP
 	// Thin wrapper around il2cpp_resolve_icall
 	inline void* ResolveCall(const char* m_Name)
 	{
+		if (!Functions.m_ResolveFunction || !m_Name)
+			return nullptr;
+
 		return reinterpret_cast<void* (IL2CPP_CALLING_CONVENTION)(const char*)>(Functions.m_ResolveFunction)(m_Name);
 	}
 
