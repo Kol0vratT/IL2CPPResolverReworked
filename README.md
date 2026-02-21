@@ -3,8 +3,6 @@
 `IL2CPP_Resolver Reworked` is a header-first C++ runtime bridge for Unity IL2CPP games.  
 It resolves IL2CPP exports, resolves managed methods and icalls, and provides a defensive Unity API layer for common engine classes.
 
-This document describes the library itself only. The `IL2CPP_Resolver_TestDLL` project is intentionally not covered here.
-
 ## What It Does
 
 - Initializes IL2CPP from a loaded game module (`GameAssembly.dll` by default).
