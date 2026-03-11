@@ -2,9 +2,16 @@
 
 // Default Headers
 #include <cstdint>
+#include <cstring>
 #include <iostream>
 #define _USE_MATH_DEFINES
 #include <math.h>
+#include <mutex>
+#include <new>
+#include <sstream>
+#include <string>
+#include <unordered_set>
+#include <utility>
 #include <vector>
 #include <unordered_map>
 #include <cctype>
@@ -22,9 +29,9 @@
 // If you target < 2022.3.8f1, define UNITY_VERSION_PRE_2022_3_8F1 BEFORE including
 // IL2CPP_Resolver.hpp.
 // -----------------------------------------------------------------------------
-//#if !defined(UNITY_VERSION_2022_3_8F1) && !defined(UNITY_VERSION_PRE_2022_3_8F1)
-//#define UNITY_VERSION_2022_3_8F1
-//#endif
+#if !defined(UNITY_VERSION_2022_3_8F1) && !defined(UNITY_VERSION_PRE_2022_3_8F1)
+#define UNITY_VERSION_2022_3_8F1
+#endif
 
 // IL2CPP Defines
 
@@ -77,6 +84,7 @@
 namespace Unity
 {
 	class CCamera;
+	class CBehaviour;
 	class CComponent;
 	class CGameObject;
 	class CLayerMask;
@@ -88,14 +96,17 @@ namespace Unity
 // Unity API
 #include "Unity/API/Object.hpp"
 #include "Unity/API/GameObject.hpp"
-#include "Unity/API/Camera.hpp"
 #include "Unity/API/Component.hpp"
+#include "Unity/API/Behaviour.hpp"
+#include "Unity/API/Camera.hpp"
 #include "Unity/API/LayerMask.hpp"
 #include "Unity/API/Rigidbody.hpp"
 #include "Unity/API/Transform.hpp"
 #include "Unity/API/RenderSettings.hpp"
 #include "Unity/API/Time.hpp"
 #include "Unity/API/Application.hpp"
+#include "Unity/API/Resources.hpp"
+#include "Unity/API/PlayerPrefs.hpp"
 #include "Unity/API/SceneManager.hpp"
 #include "Unity/API/Debug.hpp"
 #include "Unity/API/Input.hpp"
@@ -118,10 +129,10 @@ namespace IL2CPP
 			ROT = 1,
 			MAX = 2,
 		};
-		m_eExportObfuscationType m_ExportObfuscation = m_eExportObfuscationType::None;
-		ExportResolverCallback_t m_CustomExportResolver = nullptr;
-		bool m_EnableHeuristicExportResolution = false;
-		std::string m_LastInitError;
+		inline m_eExportObfuscationType m_ExportObfuscation = m_eExportObfuscationType::None;
+		inline ExportResolverCallback_t m_CustomExportResolver = nullptr;
+		inline bool m_EnableHeuristicExportResolution = false;
+		inline std::string m_LastInitError;
 
 		struct ExportSymbol_t
 		{
@@ -129,25 +140,107 @@ namespace IL2CPP
 			void* m_Address = nullptr;
 			uint16_t m_Ordinal = 0;
 		};
-		std::vector<ExportSymbol_t> m_ExportCache;
-		bool m_ExportCacheBuilt = false;
+		struct ExportResolutionRecord_t
+		{
+			std::string m_CanonicalName;
+			bool m_Required = false;
+			bool m_Resolved = false;
+			void* m_Address = nullptr;
+		};
+		inline std::vector<ExportSymbol_t> m_ExportCache;
+		inline std::vector<ExportResolutionRecord_t> m_ExportResolutionLog;
+		inline bool m_ExportCacheBuilt = false;
 
-		void SetCustomExportResolver(ExportResolverCallback_t m_Callback)
+		inline void SetCustomExportResolver(ExportResolverCallback_t m_Callback)
 		{
 			m_CustomExportResolver = m_Callback;
 		}
 
-		const char* GetLastInitError()
+		inline const char* GetLastInitError()
 		{
 			return m_LastInitError.c_str();
 		}
 
-		void SetHeuristicExportResolution(bool m_Enable)
+		inline const char* GetLoadedModuleName()
+		{
+			return Globals.m_GameAssemblyName.c_str();
+		}
+
+		inline bool IsInitialized()
+		{
+			return Globals.m_Initialized;
+		}
+
+		inline const std::vector<ExportResolutionRecord_t>& GetExportResolutionLog()
+		{
+			return m_ExportResolutionLog;
+		}
+
+		inline std::string GetInitializationReport()
+		{
+			std::ostringstream m_Stream;
+			size_t m_RequiredResolved = 0U;
+			size_t m_OptionalResolved = 0U;
+			size_t m_RequiredTotal = 0U;
+			size_t m_OptionalTotal = 0U;
+
+			for (const ExportResolutionRecord_t& m_Record : m_ExportResolutionLog)
+			{
+				if (m_Record.m_Required)
+				{
+					++m_RequiredTotal;
+					if (m_Record.m_Resolved)
+						++m_RequiredResolved;
+				}
+				else
+				{
+					++m_OptionalTotal;
+					if (m_Record.m_Resolved)
+						++m_OptionalResolved;
+				}
+			}
+
+			m_Stream
+				<< "Module: "
+				<< (Globals.m_GameAssemblyName.empty() ? "<unresolved>" : Globals.m_GameAssemblyName)
+				<< "\nInitialized: " << (Globals.m_Initialized ? "true" : "false")
+				<< "\nExport mode: " << (m_ExportObfuscation == m_eExportObfuscationType::ROT ? "ROT" : "None")
+				<< "\nRequired exports: " << m_RequiredResolved << "/" << m_RequiredTotal
+				<< "\nOptional exports: " << m_OptionalResolved << "/" << m_OptionalTotal;
+
+			if (!m_LastInitError.empty())
+				m_Stream << "\nLast error: " << m_LastInitError;
+
+			return m_Stream.str();
+		}
+
+		inline void SetHeuristicExportResolution(bool m_Enable)
 		{
 			m_EnableHeuristicExportResolution = m_Enable;
 		}
 
-		std::string NormalizeExportName(const char* m_Name)
+		inline void ResetState()
+		{
+			m_ExportObfuscation = m_eExportObfuscationType::None;
+			m_CustomExportResolver = nullptr;
+			m_EnableHeuristicExportResolution = false;
+			m_LastInitError.clear();
+			m_ExportCache.clear();
+			m_ExportResolutionLog.clear();
+			m_ExportCacheBuilt = false;
+		}
+
+		inline void AddExportResolutionRecord(const char* m_Name, bool m_Required, void* m_Address)
+		{
+			ExportResolutionRecord_t m_Record;
+			m_Record.m_CanonicalName = m_Name ? m_Name : "";
+			m_Record.m_Required = m_Required;
+			m_Record.m_Resolved = (m_Address != nullptr);
+			m_Record.m_Address = m_Address;
+			m_ExportResolutionLog.emplace_back(std::move(m_Record));
+		}
+
+		inline std::string NormalizeExportName(const char* m_Name)
 		{
 			if (!m_Name)
 				return {};
@@ -163,7 +256,7 @@ namespace IL2CPP
 			return m_Result;
 		}
 
-		void SplitTokens(const std::string& m_String, std::vector<std::string>* m_Tokens)
+		inline void SplitTokens(const std::string& m_String, std::vector<std::string>* m_Tokens)
 		{
 			m_Tokens->clear();
 			if (m_String.empty())
@@ -183,7 +276,7 @@ namespace IL2CPP
 			}
 		}
 
-		bool BuildExportCache()
+		inline bool BuildExportCache()
 		{
 			if (m_ExportCacheBuilt)
 				return true;
@@ -230,7 +323,7 @@ namespace IL2CPP
 			return !m_ExportCache.empty();
 		}
 
-		void* ResolveExportByHeuristic(const char* m_CanonicalName)
+		inline void* ResolveExportByHeuristic(const char* m_CanonicalName)
 		{
 			if (!m_CanonicalName || !BuildExportCache())
 				return nullptr;
@@ -279,8 +372,8 @@ namespace IL2CPP
 			return m_BestAddress;
 		}
 
-		int m_ROTObfuscationValue = -1;
-		void* ResolveExport(const char* m_Name)
+		inline int m_ROTObfuscationValue = -1;
+		inline void* ResolveExport(const char* m_Name)
 		{
 			if (!m_Name)
 				return nullptr;
@@ -308,11 +401,9 @@ namespace IL2CPP
 			}
 			default: return GetProcAddress(Globals.m_GameAssembly, m_Name);
 			}
-
-			return nullptr;
 		}
 
-		void* ResolveExportAny(std::initializer_list<const char*> m_Names, bool m_AllowHeuristic)
+		inline void* ResolveExportAny(std::initializer_list<const char*> m_Names, bool m_AllowHeuristic)
 		{
 			for (const char* m_Name : m_Names)
 			{
@@ -352,14 +443,22 @@ namespace IL2CPP
 			return nullptr;
 		}
 
-		bool Initialize()
+		inline bool Initialize()
 		{
 			// Clear previously resolved state for safe re-init attempts.
 			Functions = {};
+			m_ExportResolutionLog.clear();
 			m_ExportCache.clear();
 			m_ExportCacheBuilt = false;
 			m_ROTObfuscationValue = -1;
 			m_LastInitError.clear();
+			Globals.m_Initialized = false;
+
+			if (!Globals.m_GameAssembly)
+			{
+				m_LastInitError = "Failed to locate IL2CPP module";
+				return false;
+			}
 
 			bool m_InitExportResolved = false;
 			for (int i = 0; m_eExportObfuscationType::MAX > i; ++i)
@@ -381,6 +480,7 @@ namespace IL2CPP
 			auto resolveRequired = [&](void** m_Address, const char* m_DebugName, std::initializer_list<const char*> m_Names)
 				{
 					*m_Address = ResolveExportAny(m_Names, false);
+					AddExportResolutionRecord(m_DebugName, true, *m_Address);
 					if (!*m_Address)
 						m_LastInitError = std::string("Missing required export: ") + (m_DebugName ? m_DebugName : "<unknown>");
 					return (*m_Address != nullptr);
@@ -389,6 +489,7 @@ namespace IL2CPP
 			auto resolveOptional = [&](void** m_Address, std::initializer_list<const char*> m_Names)
 				{
 					*m_Address = ResolveExportAny(m_Names, false);
+					AddExportResolutionRecord(m_Names.size() > 0 ? *m_Names.begin() : nullptr, false, *m_Address);
 				};
 
 			// Required core exports
@@ -419,16 +520,19 @@ namespace IL2CPP
 			resolveOptional(&Functions.m_FieldStaticSetValue, { IL2CPP_FIELD_STATIC_SET_VALUE });
 
 			// Unity APIs
-			Unity::Camera::Initialize();
-			Unity::Component::Initialize();
-			Unity::GameObject::Initialize();
-			Unity::LayerMask::Initialize();
 			Unity::Object::Initialize();
+			Unity::GameObject::Initialize();
+			Unity::Component::Initialize();
+			Unity::Behaviour::Initialize();
+			Unity::Camera::Initialize();
+			Unity::LayerMask::Initialize();
 			Unity::RigidBody::Initialize();
 			Unity::Transform::Initialize();
 			Unity::RenderSettings::Initialize();
 			Unity::Time::Initialize();
 			Unity::Application::Initialize();
+			Unity::Resources::Initialize();
+			Unity::PlayerPrefs::Initialize();
 			Unity::SceneManager::Initialize();
 			Unity::Debug::Initialize();
 			Unity::Input::Initialize();
@@ -437,6 +541,7 @@ namespace IL2CPP
 
 			// Caches
 			IL2CPP::SystemTypeCache::Initializer::PreCache();
+			Globals.m_Initialized = true;
 
 			return true;
 		}
@@ -456,19 +561,61 @@ namespace IL2CPP
 		UnityAPI::SetHeuristicExportResolution(m_Enable);
 	}
 
+	inline const char* GetLastInitError()
+	{
+		return UnityAPI::GetLastInitError();
+	}
+
+	inline const char* GetLoadedModuleName()
+	{
+		return UnityAPI::GetLoadedModuleName();
+	}
+
+	inline bool IsInitialized()
+	{
+		return UnityAPI::IsInitialized();
+	}
+
+	inline std::string GetInitializationReport()
+	{
+		return UnityAPI::GetInitializationReport();
+	}
+
+	inline void Reset(bool m_ClearModuleHandle = false)
+	{
+		Functions = {};
+		UnityAPI::ResetState();
+		IL2CPP::Class::ClearCache();
+		IL2CPP::ClearResolverCaches();
+		IL2CPP::SystemTypeCache::Clear();
+		Globals.m_Initialized = false;
+
+		if (m_ClearModuleHandle)
+		{
+			Globals.m_GameAssembly = nullptr;
+			Globals.m_GameAssemblyName.clear();
+		}
+	}
+
 	/*
 	*	You need to call this, before using any IL2CPP/Unity Functions!
 	*	Args:
 	*		m_WaitForModule - Will wait for main module if you're loading your dll earlier than the main module.
 	*		m_MaxSecondsWait - Max seconds it will wait for main module to load otherwise will return false to prevent infinite loop.
 	*/
-	bool Initialize(bool m_WaitForModule = false, int m_MaxSecondsWait = 60)
+	inline bool Initialize(bool m_WaitForModule = false, int m_MaxSecondsWait = 60)
 	{
-		auto resolveModule = []() -> HMODULE
+		struct ResolvedModule_t
+		{
+			HMODULE m_Handle = nullptr;
+			const char* m_Name = nullptr;
+		};
+
+		auto resolveModule = []() -> ResolvedModule_t
 			{
 				// Primary target.
 				if (HMODULE m_Module = GetModuleHandleA(IL2CPP_MAIN_MODULE))
-					return m_Module;
+					return { m_Module, IL2CPP_MAIN_MODULE };
 
 				// Common alternatives across Unity/loader setups.
 				static const char* m_CommonModules[] =
@@ -487,13 +634,15 @@ namespace IL2CPP
 						continue;
 
 					if (HMODULE m_Module = GetModuleHandleA(m_Name))
-						return m_Module;
+						return { m_Module, m_Name };
 				}
 
-				return nullptr;
+				return {};
 			};
 
-		Globals.m_GameAssembly = resolveModule();
+		ResolvedModule_t m_Module = resolveModule();
+		Globals.m_GameAssembly = m_Module.m_Handle;
+		Globals.m_GameAssemblyName = m_Module.m_Name ? m_Module.m_Name : "";
 
 		if (m_WaitForModule)
 		{
@@ -501,12 +650,23 @@ namespace IL2CPP
 			while (!Globals.m_GameAssembly)
 			{
 				if (m_SecondsWaited >= m_MaxSecondsWait)
+				{
+					UnityAPI::m_LastInitError = "Timed out while waiting for IL2CPP module";
 					return false;
+				}
 
-				Globals.m_GameAssembly = resolveModule();
+				m_Module = resolveModule();
+				Globals.m_GameAssembly = m_Module.m_Handle;
+				Globals.m_GameAssemblyName = m_Module.m_Name ? m_Module.m_Name : "";
 				++m_SecondsWaited;
 				Sleep(1000);
 			}
+		}
+
+		if (!Globals.m_GameAssembly)
+		{
+			UnityAPI::m_LastInitError = "Failed to locate IL2CPP module";
+			return false;
 		}
 
 		if (!UnityAPI::Initialize())

@@ -8,9 +8,9 @@ namespace Unity
 		void* m_FindObjectsOfType = nullptr;   // FindObjectsOfType(Type, bool)
 		void* m_FindObjectsByType2 = nullptr;  // FindObjectsByType(Type, FindObjectsSortMode)
 		void* m_FindObjectsByType3 = nullptr;  // FindObjectsByType(Type, FindObjectsSortMode, FindObjectsInactive)
-		void* m_GetName = nullptr;
+		void* m_GetName = nullptr; bool m_GetName_ThisIsPtr = false;
 	};
-	ObjectFunctions_t m_ObjectFunctions;
+	inline ObjectFunctions_t m_ObjectFunctions;
 
 	class CObject : public IL2CPP::CClass
 	{
@@ -20,55 +20,109 @@ namespace Unity
 			if (!this || !m_ObjectFunctions.m_Destroy)
 				return;
 
-			reinterpret_cast<void(UNITY_CALLING_CONVENTION)(void*, float)>(m_ObjectFunctions.m_Destroy)(this, fTimeDelay);
+			reinterpret_cast<void(UNITY_CALLING_CONVENTION)(void*, float)>(m_ObjectFunctions.m_Destroy)(GetManagedObjectPointer(), fTimeDelay);
 		}
 
 		System_String* GetName()
 		{
-			if (!this || !m_ObjectFunctions.m_GetName)
+			if (!this)
 				return nullptr;
 
-			return reinterpret_cast<System_String * (UNITY_CALLING_CONVENTION)(void*)>(m_ObjectFunctions.m_GetName)(this);
+			if (m_ObjectFunctions.m_GetName)
+			{
+				void* selfArg = m_ObjectFunctions.m_GetName_ThisIsPtr ? this->m_CachedPtr : GetManagedObjectPointer();
+				if (selfArg)
+				{
+					if (System_String* name = reinterpret_cast<System_String * (UNITY_CALLING_CONVENTION)(void*)>(m_ObjectFunctions.m_GetName)(selfArg))
+						return name;
+				}
+			}
+
+			return GetPropertyValue<System_String*>("name");
 		}
 	};
 
 	namespace Object
 	{
-		void Initialize()
+		inline void Initialize()
 		{
 			IL2CPP::SystemTypeCache::Initializer::Add(UNITY_OBJECT_CLASS);
 
 			// Prefer managed method pointers (stable across Unity versions)
 			m_ObjectFunctions.m_Destroy = IL2CPP::ResolveUnityMethodOrIcall(
-				UNITY_OBJECT_CLASS, "Destroy", 2, // static Destroy(Object, float)
-				{ UNITY_OBJECT_DESTROY, IL2CPP_RStr(UNITY_OBJECT_CLASS"::Destroy_Injected") });
+				UNITY_OBJECT_CLASS, "Destroy",
+				{ UNITY_OBJECT_CLASS, "System.Single" },
+				{ UNITY_OBJECT_DESTROY });
 
 			// FindObjectsOfType(Type, bool) (legacy but still present in many games)
 			m_ObjectFunctions.m_FindObjectsOfType = IL2CPP::ResolveUnityMethodOrIcall(
-				UNITY_OBJECT_CLASS, "FindObjectsOfType", 2,
-				{ UNITY_OBJECT_FINDOBJECTSOFTYPE, IL2CPP_RStr(UNITY_OBJECT_CLASS"::FindObjectsOfType_Injected") });
+				UNITY_OBJECT_CLASS, "FindObjectsOfType",
+				{ "System.Type", "System.Boolean" },
+				{ UNITY_OBJECT_FINDOBJECTSOFTYPE });
 
 			// Unity 6 / 6000.x preferred APIs
 			m_ObjectFunctions.m_FindObjectsByType2 = IL2CPP::ResolveUnityMethodOrIcall(
-				UNITY_OBJECT_CLASS, "FindObjectsByType", 2,
+				UNITY_OBJECT_CLASS, "FindObjectsByType",
+				{ "System.Type", "UnityEngine.FindObjectsSortMode" },
 				{
 					IL2CPP_RStr(UNITY_OBJECT_CLASS"::FindObjectsByType(System.Type,UnityEngine.FindObjectsSortMode)"),
 					IL2CPP_RStr(UNITY_OBJECT_CLASS"::FindObjectsByType(System.Type,int)"),
 				});
 
 			m_ObjectFunctions.m_FindObjectsByType3 = IL2CPP::ResolveUnityMethodOrIcall(
-				UNITY_OBJECT_CLASS, "FindObjectsByType", 3,
+				UNITY_OBJECT_CLASS, "FindObjectsByType",
+				{ "System.Type", "UnityEngine.FindObjectsSortMode", "UnityEngine.FindObjectsInactive" },
 				{
 					IL2CPP_RStr(UNITY_OBJECT_CLASS"::FindObjectsByType(System.Type,UnityEngine.FindObjectsSortMode,UnityEngine.FindObjectsInactive)"),
 					IL2CPP_RStr(UNITY_OBJECT_CLASS"::FindObjectsByType(System.Type,int,int)"),
 				});
 
-			m_ObjectFunctions.m_GetName = IL2CPP::ResolveUnityMethodOrIcall(
-				UNITY_OBJECT_CLASS, "GetName", 1,
-				{ UNITY_OBJECT_GETNAME, IL2CPP_RStr(UNITY_OBJECT_CLASS"::GetName_Injected") });
+			m_ObjectFunctions.m_GetName = nullptr;
+			m_ObjectFunctions.m_GetName_ThisIsPtr = false;
+
+			void* m_pGetName = IL2CPP::ResolveUnityMethod(UNITY_OBJECT_CLASS, "get_name", 0);
+			if (m_pGetName)
+			{
+				m_ObjectFunctions.m_GetName = m_pGetName;
+			}
+			else if ((m_pGetName = IL2CPP::ResolveCallAny(
+				{
+					IL2CPP_RStr(UNITY_OBJECT_CLASS"::get_name"),
+					IL2CPP_RStr(UNITY_OBJECT_CLASS"::get_name()")
+				})))
+			{
+				m_ObjectFunctions.m_GetName = m_pGetName;
+			}
+			else if ((m_pGetName = IL2CPP::ResolveUnityMethod(UNITY_OBJECT_CLASS, "get_name_Injected", 1)))
+			{
+				m_ObjectFunctions.m_GetName = m_pGetName;
+				m_ObjectFunctions.m_GetName_ThisIsPtr = true;
+			}
+			else if ((m_pGetName = IL2CPP::ResolveCallAny(
+				{
+					IL2CPP_RStr(UNITY_OBJECT_CLASS"::get_name_Injected"),
+					IL2CPP_RStr(UNITY_OBJECT_CLASS"::get_name_Injected(System.IntPtr)")
+				})))
+			{
+				m_ObjectFunctions.m_GetName = m_pGetName;
+				m_ObjectFunctions.m_GetName_ThisIsPtr = true;
+			}
+			else if ((m_pGetName = IL2CPP::ResolveUnityMethod(UNITY_OBJECT_CLASS, "GetName", { UNITY_OBJECT_CLASS })))
+			{
+				m_ObjectFunctions.m_GetName = m_pGetName;
+			}
+			else
+			{
+				m_ObjectFunctions.m_GetName = IL2CPP::ResolveCallAny(
+					{
+						UNITY_OBJECT_GETNAME,
+						IL2CPP_RStr(UNITY_OBJECT_CLASS"::GetName(UnityEngine.Object)"),
+						IL2CPP_RStr(UNITY_OBJECT_CLASS"::GetName")
+					});
+			}
 		}
 
-		static il2cppObject* New(il2cppClass* m_pClass)
+		inline static il2cppObject* New(il2cppClass* m_pClass)
 		{
 			if (!IL2CPP::Functions.m_pObjectNew || !m_pClass)
 				return nullptr;
@@ -77,7 +131,7 @@ namespace Unity
 		}
 
 		template<typename T>
-		static il2cppArray<T*>* FindObjectsOfType(il2cppObject* m_pSystemType, bool m_bIncludeInactive = false)
+		inline static il2cppArray<T*>* FindObjectsOfType(il2cppObject* m_pSystemType, bool m_bIncludeInactive = false)
 		{
 			if (!m_pSystemType)
 				return nullptr;
@@ -99,7 +153,7 @@ namespace Unity
 		}
 
 		template<typename T>
-		static il2cppArray<T*>* FindObjectsOfType(const char* m_pSystemTypeName, bool m_bIncludeInactive = false)
+		inline static il2cppArray<T*>* FindObjectsOfType(const char* m_pSystemTypeName, bool m_bIncludeInactive = false)
 		{
 			if (!m_pSystemTypeName)
 				return nullptr;
@@ -111,16 +165,16 @@ namespace Unity
 		}
 
 		template<typename T>
-		static T* FindObjectOfType(il2cppObject* m_pSystemType, bool m_bIncludeInactive = false)
+		inline static T* FindObjectOfType(il2cppObject* m_pSystemType, bool m_bIncludeInactive = false)
 		{
 			il2cppArray<T*>* m_pArray = FindObjectsOfType<T>(m_pSystemType, m_bIncludeInactive);
 			if (!m_pArray || m_pArray->m_uMaxLength == 0U) return nullptr;
 
-			return m_pArray->m_pValues[0];
+			return (*m_pArray)[0];
 		}
 
 		template<typename T>
-		static T* FindObjectOfType(const char* m_pSystemTypeName, bool m_bIncludeInactive = false)
+		inline static T* FindObjectOfType(const char* m_pSystemTypeName, bool m_bIncludeInactive = false)
 		{
 			if (!m_pSystemTypeName)
 				return nullptr;

@@ -38,7 +38,7 @@ namespace Unity
 	};
 	inline TransformFunctions_t m_TransformFunctions;
 
-	class CTransform : public IL2CPP::CClass
+	class CTransform : public CComponent
 	{
 	public:
 		CTransform* GetParent()
@@ -46,7 +46,7 @@ namespace Unity
 			if (!this || !m_TransformFunctions.m_GetParent)
 				return nullptr;
 
-			void* selfArg = m_TransformFunctions.m_GetParent_ThisIsPtr ? this->m_CachedPtr : (void*)this;
+			void* selfArg = m_TransformFunctions.m_GetParent_ThisIsPtr ? this->m_CachedPtr : this->GetManagedObjectPointer();
 			if (!selfArg) return nullptr;
 			return reinterpret_cast<CTransform * (UNITY_CALLING_CONVENTION)(void*)>(m_TransformFunctions.m_GetParent)(selfArg);
 		}
@@ -56,7 +56,7 @@ namespace Unity
 			if (!this || !m_TransformFunctions.m_GetRoot)
 				return nullptr;
 
-			void* selfArg = m_TransformFunctions.m_GetRoot_ThisIsPtr ? this->m_CachedPtr : (void*)this;
+			void* selfArg = m_TransformFunctions.m_GetRoot_ThisIsPtr ? this->m_CachedPtr : this->GetManagedObjectPointer();
 			if (!selfArg) return nullptr;
 			return reinterpret_cast<CTransform * (UNITY_CALLING_CONVENTION)(void*)>(m_TransformFunctions.m_GetRoot)(selfArg);
 		}
@@ -66,7 +66,7 @@ namespace Unity
 			if (!this || !m_TransformFunctions.m_GetChild)
 				return nullptr;
 
-			void* selfArg = m_TransformFunctions.m_GetChild_ThisIsPtr ? this->m_CachedPtr : (void*)this;
+			void* selfArg = m_TransformFunctions.m_GetChild_ThisIsPtr ? this->m_CachedPtr : this->GetManagedObjectPointer();
 			if (!selfArg) return nullptr;
 			return reinterpret_cast<CTransform * (UNITY_CALLING_CONVENTION)(void*, int)>(m_TransformFunctions.m_GetChild)(selfArg, m_iIndex);
 		}
@@ -76,7 +76,7 @@ namespace Unity
 			if (!this || !m_TransformFunctions.m_GetChildCount)
 				return 0;
 
-			void* selfArg = m_TransformFunctions.m_GetChildCount_ThisIsPtr ? this->m_CachedPtr : (void*)this;
+			void* selfArg = m_TransformFunctions.m_GetChildCount_ThisIsPtr ? this->m_CachedPtr : this->GetManagedObjectPointer();
 			if (!selfArg) return 0;
 			return reinterpret_cast<int(UNITY_CALLING_CONVENTION)(void*)>(m_TransformFunctions.m_GetChildCount)(selfArg);
 		}
@@ -90,7 +90,7 @@ namespace Unity
 			if (!s)
 				return nullptr;
 
-			void* selfArg = m_TransformFunctions.m_FindChild_ThisIsPtr ? this->m_CachedPtr : (void*)this;
+			void* selfArg = m_TransformFunctions.m_FindChild_ThisIsPtr ? this->m_CachedPtr : this->GetManagedObjectPointer();
 			if (!selfArg) return nullptr;
 			return reinterpret_cast<CTransform * (UNITY_CALLING_CONVENTION)(void*, System_String*, bool)>(m_TransformFunctions.m_FindChild)(selfArg, s, isActiveOnly);
 		}
@@ -110,7 +110,7 @@ namespace Unity
 			if (m_TransformFunctions.m_GetPosition_Injected)
 			{
 				Vector3 v{};
-				void* selfArg = m_TransformFunctions.m_GetPosition_ThisIsPtr ? this->m_CachedPtr : (void*)this;
+				void* selfArg = m_TransformFunctions.m_GetPosition_ThisIsPtr ? this->m_CachedPtr : this->GetManagedObjectPointer();
 				if (!selfArg) return {};
 				reinterpret_cast<void(UNITY_CALLING_CONVENTION)(void*, Vector3&)>(m_TransformFunctions.m_GetPosition_Injected)(selfArg, v);
 				return v;
@@ -119,7 +119,7 @@ namespace Unity
 			// Fallback value-return (if present)
 			if (m_TransformFunctions.m_GetPosition_Value)
 			{
-				void* selfArg = m_TransformFunctions.m_GetPositionValue_ThisIsPtr ? this->m_CachedPtr : (void*)this;
+				void* selfArg = m_TransformFunctions.m_GetPositionValue_ThisIsPtr ? this->m_CachedPtr : this->GetManagedObjectPointer();
 				if (!selfArg) return {};
 				return reinterpret_cast<Vector3(UNITY_CALLING_CONVENTION)(void*)>(m_TransformFunctions.m_GetPosition_Value)(selfArg);
 			}
@@ -135,7 +135,7 @@ namespace Unity
 			if (m_TransformFunctions.m_GetRotation_Injected)
 			{
 				Quaternion q{};
-				void* selfArg = m_TransformFunctions.m_GetRotation_ThisIsPtr ? this->m_CachedPtr : (void*)this;
+				void* selfArg = m_TransformFunctions.m_GetRotation_ThisIsPtr ? this->m_CachedPtr : this->GetManagedObjectPointer();
 				if (!selfArg) return {};
 				reinterpret_cast<void(UNITY_CALLING_CONVENTION)(void*, Quaternion&)>(m_TransformFunctions.m_GetRotation_Injected)(selfArg, q);
 				return q;
@@ -143,7 +143,7 @@ namespace Unity
 
 			if (m_TransformFunctions.m_GetRotation_Value)
 			{
-				void* selfArg = m_TransformFunctions.m_GetRotationValue_ThisIsPtr ? this->m_CachedPtr : (void*)this;
+				void* selfArg = m_TransformFunctions.m_GetRotationValue_ThisIsPtr ? this->m_CachedPtr : this->GetManagedObjectPointer();
 				if (!selfArg) return {};
 				return reinterpret_cast<Quaternion(UNITY_CALLING_CONVENTION)(void*)>(m_TransformFunctions.m_GetRotation_Value)(selfArg);
 			}
@@ -159,7 +159,7 @@ namespace Unity
 			if (m_TransformFunctions.m_GetLocalPosition_Injected)
 			{
 				Vector3 v{};
-				void* selfArg = m_TransformFunctions.m_GetLocalPosition_ThisIsPtr ? this->m_CachedPtr : (void*)this;
+				void* selfArg = m_TransformFunctions.m_GetLocalPosition_ThisIsPtr ? this->m_CachedPtr : this->GetManagedObjectPointer();
 				if (!selfArg) return {};
 				reinterpret_cast<void(UNITY_CALLING_CONVENTION)(void*, Vector3&)>(m_TransformFunctions.m_GetLocalPosition_Injected)(selfArg, v);
 				return v;
@@ -167,7 +167,7 @@ namespace Unity
 
 			if (m_TransformFunctions.m_GetLocalPosition_Value)
 			{
-				void* selfArg = m_TransformFunctions.m_GetLocalPositionValue_ThisIsPtr ? this->m_CachedPtr : (void*)this;
+				void* selfArg = m_TransformFunctions.m_GetLocalPositionValue_ThisIsPtr ? this->m_CachedPtr : this->GetManagedObjectPointer();
 				if (!selfArg) return {};
 				return reinterpret_cast<Vector3(UNITY_CALLING_CONVENTION)(void*)>(m_TransformFunctions.m_GetLocalPosition_Value)(selfArg);
 			}
@@ -183,7 +183,7 @@ namespace Unity
 			if (m_TransformFunctions.m_GetLocalScale_Injected)
 			{
 				Vector3 v{};
-				void* selfArg = m_TransformFunctions.m_GetLocalScale_ThisIsPtr ? this->m_CachedPtr : (void*)this;
+				void* selfArg = m_TransformFunctions.m_GetLocalScale_ThisIsPtr ? this->m_CachedPtr : this->GetManagedObjectPointer();
 				if (!selfArg) return {};
 				reinterpret_cast<void(UNITY_CALLING_CONVENTION)(void*, Vector3&)>(m_TransformFunctions.m_GetLocalScale_Injected)(selfArg, v);
 				return v;
@@ -191,7 +191,7 @@ namespace Unity
 
 			if (m_TransformFunctions.m_GetLocalScale_Value)
 			{
-				void* selfArg = m_TransformFunctions.m_GetLocalScaleValue_ThisIsPtr ? this->m_CachedPtr : (void*)this;
+				void* selfArg = m_TransformFunctions.m_GetLocalScaleValue_ThisIsPtr ? this->m_CachedPtr : this->GetManagedObjectPointer();
 				if (!selfArg) return {};
 				return reinterpret_cast<Vector3(UNITY_CALLING_CONVENTION)(void*)>(m_TransformFunctions.m_GetLocalScale_Value)(selfArg);
 			}
@@ -207,7 +207,7 @@ namespace Unity
 			// Prefer injected(ref)
 			if (m_TransformFunctions.m_SetPosition_Injected)
 			{
-				void* selfArg = m_TransformFunctions.m_SetPosition_ThisIsPtr ? this->m_CachedPtr : (void*)this;
+				void* selfArg = m_TransformFunctions.m_SetPosition_ThisIsPtr ? this->m_CachedPtr : this->GetManagedObjectPointer();
 				if (!selfArg) return;
 				reinterpret_cast<void(UNITY_CALLING_CONVENTION)(void*, Vector3&)>(m_TransformFunctions.m_SetPosition_Injected)(selfArg, m_vVector);
 				return;
@@ -215,7 +215,7 @@ namespace Unity
 
 			if (m_TransformFunctions.m_SetPosition_Value)
 			{
-				void* selfArg = m_TransformFunctions.m_SetPositionValue_ThisIsPtr ? this->m_CachedPtr : (void*)this;
+				void* selfArg = m_TransformFunctions.m_SetPositionValue_ThisIsPtr ? this->m_CachedPtr : this->GetManagedObjectPointer();
 				if (!selfArg) return;
 				reinterpret_cast<void(UNITY_CALLING_CONVENTION)(void*, Vector3)>(m_TransformFunctions.m_SetPosition_Value)(selfArg, m_vVector);
 			}
@@ -228,7 +228,7 @@ namespace Unity
 
 			if (m_TransformFunctions.m_SetRotation_Injected)
 			{
-				void* selfArg = m_TransformFunctions.m_SetRotation_ThisIsPtr ? this->m_CachedPtr : (void*)this;
+				void* selfArg = m_TransformFunctions.m_SetRotation_ThisIsPtr ? this->m_CachedPtr : this->GetManagedObjectPointer();
 				if (!selfArg) return;
 				reinterpret_cast<void(UNITY_CALLING_CONVENTION)(void*, Quaternion&)>(m_TransformFunctions.m_SetRotation_Injected)(selfArg, m_qQuat);
 				return;
@@ -236,7 +236,7 @@ namespace Unity
 
 			if (m_TransformFunctions.m_SetRotation_Value)
 			{
-				void* selfArg = m_TransformFunctions.m_SetRotationValue_ThisIsPtr ? this->m_CachedPtr : (void*)this;
+				void* selfArg = m_TransformFunctions.m_SetRotationValue_ThisIsPtr ? this->m_CachedPtr : this->GetManagedObjectPointer();
 				if (!selfArg) return;
 				reinterpret_cast<void(UNITY_CALLING_CONVENTION)(void*, Quaternion)>(m_TransformFunctions.m_SetRotation_Value)(selfArg, m_qQuat);
 			}
@@ -249,7 +249,7 @@ namespace Unity
 
 			if (m_TransformFunctions.m_SetLocalPosition_Injected)
 			{
-				void* selfArg = m_TransformFunctions.m_SetLocalPosition_ThisIsPtr ? this->m_CachedPtr : (void*)this;
+				void* selfArg = m_TransformFunctions.m_SetLocalPosition_ThisIsPtr ? this->m_CachedPtr : this->GetManagedObjectPointer();
 				if (!selfArg) return;
 				reinterpret_cast<void(UNITY_CALLING_CONVENTION)(void*, Vector3&)>(m_TransformFunctions.m_SetLocalPosition_Injected)(selfArg, m_vVector);
 				return;
@@ -257,7 +257,7 @@ namespace Unity
 
 			if (m_TransformFunctions.m_SetLocalPosition_Value)
 			{
-				void* selfArg = m_TransformFunctions.m_SetLocalPositionValue_ThisIsPtr ? this->m_CachedPtr : (void*)this;
+				void* selfArg = m_TransformFunctions.m_SetLocalPositionValue_ThisIsPtr ? this->m_CachedPtr : this->GetManagedObjectPointer();
 				if (!selfArg) return;
 				reinterpret_cast<void(UNITY_CALLING_CONVENTION)(void*, Vector3)>(m_TransformFunctions.m_SetLocalPosition_Value)(selfArg, m_vVector);
 			}
@@ -270,7 +270,7 @@ namespace Unity
 
 			if (m_TransformFunctions.m_SetLocalScale_Injected)
 			{
-				void* selfArg = m_TransformFunctions.m_SetLocalScale_ThisIsPtr ? this->m_CachedPtr : (void*)this;
+				void* selfArg = m_TransformFunctions.m_SetLocalScale_ThisIsPtr ? this->m_CachedPtr : this->GetManagedObjectPointer();
 				if (!selfArg) return;
 				reinterpret_cast<void(UNITY_CALLING_CONVENTION)(void*, Vector3&)>(m_TransformFunctions.m_SetLocalScale_Injected)(selfArg, m_vVector);
 				return;
@@ -278,7 +278,7 @@ namespace Unity
 
 			if (m_TransformFunctions.m_SetLocalScale_Value)
 			{
-				void* selfArg = m_TransformFunctions.m_SetLocalScaleValue_ThisIsPtr ? this->m_CachedPtr : (void*)this;
+				void* selfArg = m_TransformFunctions.m_SetLocalScaleValue_ThisIsPtr ? this->m_CachedPtr : this->GetManagedObjectPointer();
 				if (!selfArg) return;
 				reinterpret_cast<void(UNITY_CALLING_CONVENTION)(void*, Vector3)>(m_TransformFunctions.m_SetLocalScale_Value)(selfArg, m_vVector);
 			}
@@ -325,6 +325,32 @@ namespace Unity
 					}
 				};
 
+			auto resolveValueInstance = [&](void*& outPtr, bool& outThisIsPtr,
+				const char* methodName, int argCount,
+				std::initializer_list<const char*> icallObj)
+				{
+					outPtr = nullptr;
+					outThisIsPtr = false;
+
+					if (void* p = IL2CPP::ResolveUnityMethod(UNITY_TRANSFORM_CLASS, methodName, argCount))
+					{
+						outPtr = p;
+						return;
+					}
+
+					for (const char* n : icallObj)
+					{
+						if (!n)
+							continue;
+
+						if (void* p = IL2CPP::ResolveCallCached(n))
+						{
+							outPtr = p;
+							return;
+						}
+					}
+				};
+
 			// Basic instance refs/ints/bools
 			resolveInstanceObjOrPtr(m_TransformFunctions.m_GetParent, m_TransformFunctions.m_GetParent_ThisIsPtr,
 				"get_parent", 0,
@@ -365,108 +391,108 @@ namespace Unity
 			resolveInstanceObjOrPtr(m_TransformFunctions.m_GetPosition_Injected, m_TransformFunctions.m_GetPosition_ThisIsPtr,
 				"get_position_Injected", 1,
 				"get_position_Injected", 2, // if injected expects IntPtr, it becomes (IntPtr, out Vector3)
-				{ UNITY_TRANSFORM_GETPOSITION, IL2CPP_RStr(UNITY_TRANSFORM_CLASS"::get_position_Injected") },
-				{ IL2CPP_RStr(UNITY_TRANSFORM_CLASS"::get_position_Injected(System.IntPtr,UnityEngine.Vector3&)"),
+				{},
+				{ UNITY_TRANSFORM_GETPOSITION,
+				  IL2CPP_RStr(UNITY_TRANSFORM_CLASS"::get_position_Injected"),
+				  IL2CPP_RStr(UNITY_TRANSFORM_CLASS"::get_position_Injected(System.IntPtr,UnityEngine.Vector3&)"),
 				  IL2CPP_RStr(UNITY_TRANSFORM_CLASS"::get_position_Injected(System.IntPtr,UnityEngine.Vector3)") });
 
 			resolveInstanceObjOrPtr(m_TransformFunctions.m_GetRotation_Injected, m_TransformFunctions.m_GetRotation_ThisIsPtr,
 				"get_rotation_Injected", 1,
 				"get_rotation_Injected", 2,
-				{ UNITY_TRANSFORM_GETROTATION, IL2CPP_RStr(UNITY_TRANSFORM_CLASS"::get_rotation_Injected") },
-				{ IL2CPP_RStr(UNITY_TRANSFORM_CLASS"::get_rotation_Injected(System.IntPtr,UnityEngine.Quaternion&)"),
+				{},
+				{ UNITY_TRANSFORM_GETROTATION,
+				  IL2CPP_RStr(UNITY_TRANSFORM_CLASS"::get_rotation_Injected"),
+				  IL2CPP_RStr(UNITY_TRANSFORM_CLASS"::get_rotation_Injected(System.IntPtr,UnityEngine.Quaternion&)"),
 				  IL2CPP_RStr(UNITY_TRANSFORM_CLASS"::get_rotation_Injected(System.IntPtr,UnityEngine.Quaternion)") });
 
 			resolveInstanceObjOrPtr(m_TransformFunctions.m_GetLocalPosition_Injected, m_TransformFunctions.m_GetLocalPosition_ThisIsPtr,
 				"get_localPosition_Injected", 1,
 				"get_localPosition_Injected", 2,
-				{ UNITY_TRANSFORM_GETLOCALPOSITION, IL2CPP_RStr(UNITY_TRANSFORM_CLASS"::get_localPosition_Injected") },
-				{ IL2CPP_RStr(UNITY_TRANSFORM_CLASS"::get_localPosition_Injected(System.IntPtr,UnityEngine.Vector3&)"),
+				{},
+				{ UNITY_TRANSFORM_GETLOCALPOSITION,
+				  IL2CPP_RStr(UNITY_TRANSFORM_CLASS"::get_localPosition_Injected"),
+				  IL2CPP_RStr(UNITY_TRANSFORM_CLASS"::get_localPosition_Injected(System.IntPtr,UnityEngine.Vector3&)"),
 				  IL2CPP_RStr(UNITY_TRANSFORM_CLASS"::get_localPosition_Injected(System.IntPtr,UnityEngine.Vector3)") });
 
 			resolveInstanceObjOrPtr(m_TransformFunctions.m_GetLocalScale_Injected, m_TransformFunctions.m_GetLocalScale_ThisIsPtr,
 				"get_localScale_Injected", 1,
 				"get_localScale_Injected", 2,
-				{ UNITY_TRANSFORM_GETLOCALSCALE, IL2CPP_RStr(UNITY_TRANSFORM_CLASS"::get_localScale_Injected") },
-				{ IL2CPP_RStr(UNITY_TRANSFORM_CLASS"::get_localScale_Injected(System.IntPtr,UnityEngine.Vector3&)"),
+				{},
+				{ UNITY_TRANSFORM_GETLOCALSCALE,
+				  IL2CPP_RStr(UNITY_TRANSFORM_CLASS"::get_localScale_Injected"),
+				  IL2CPP_RStr(UNITY_TRANSFORM_CLASS"::get_localScale_Injected(System.IntPtr,UnityEngine.Vector3&)"),
 				  IL2CPP_RStr(UNITY_TRANSFORM_CLASS"::get_localScale_Injected(System.IntPtr,UnityEngine.Vector3)") });
 
 			// Value-return fallbacks (rarely needed; included for completeness)
-			resolveInstanceObjOrPtr(m_TransformFunctions.m_GetPosition_Value, m_TransformFunctions.m_GetPositionValue_ThisIsPtr,
+			resolveValueInstance(m_TransformFunctions.m_GetPosition_Value, m_TransformFunctions.m_GetPositionValue_ThisIsPtr,
 				"get_position", 0,
-				"get_position_Injected", 1,
-				{ IL2CPP_RStr(UNITY_TRANSFORM_CLASS"::get_position") },
-				{ IL2CPP_RStr(UNITY_TRANSFORM_CLASS"::get_position_Injected(System.IntPtr)") });
+				{ IL2CPP_RStr(UNITY_TRANSFORM_CLASS"::get_position") });
 
-			resolveInstanceObjOrPtr(m_TransformFunctions.m_GetRotation_Value, m_TransformFunctions.m_GetRotationValue_ThisIsPtr,
+			resolveValueInstance(m_TransformFunctions.m_GetRotation_Value, m_TransformFunctions.m_GetRotationValue_ThisIsPtr,
 				"get_rotation", 0,
-				"get_rotation_Injected", 1,
-				{ IL2CPP_RStr(UNITY_TRANSFORM_CLASS"::get_rotation") },
-				{ IL2CPP_RStr(UNITY_TRANSFORM_CLASS"::get_rotation_Injected(System.IntPtr)") });
+				{ IL2CPP_RStr(UNITY_TRANSFORM_CLASS"::get_rotation") });
 
-			resolveInstanceObjOrPtr(m_TransformFunctions.m_GetLocalPosition_Value, m_TransformFunctions.m_GetLocalPositionValue_ThisIsPtr,
+			resolveValueInstance(m_TransformFunctions.m_GetLocalPosition_Value, m_TransformFunctions.m_GetLocalPositionValue_ThisIsPtr,
 				"get_localPosition", 0,
-				"get_localPosition_Injected", 1,
-				{ IL2CPP_RStr(UNITY_TRANSFORM_CLASS"::get_localPosition") },
-				{ IL2CPP_RStr(UNITY_TRANSFORM_CLASS"::get_localPosition_Injected(System.IntPtr)") });
+				{ IL2CPP_RStr(UNITY_TRANSFORM_CLASS"::get_localPosition") });
 
-			resolveInstanceObjOrPtr(m_TransformFunctions.m_GetLocalScale_Value, m_TransformFunctions.m_GetLocalScaleValue_ThisIsPtr,
+			resolveValueInstance(m_TransformFunctions.m_GetLocalScale_Value, m_TransformFunctions.m_GetLocalScaleValue_ThisIsPtr,
 				"get_localScale", 0,
-				"get_localScale_Injected", 1,
-				{ IL2CPP_RStr(UNITY_TRANSFORM_CLASS"::get_localScale") },
-				{ IL2CPP_RStr(UNITY_TRANSFORM_CLASS"::get_localScale_Injected(System.IntPtr)") });
+				{ IL2CPP_RStr(UNITY_TRANSFORM_CLASS"::get_localScale") });
 
 			// Setters: prefer injected(ref), fallback to by-value
 			resolveInstanceObjOrPtr(m_TransformFunctions.m_SetPosition_Injected, m_TransformFunctions.m_SetPosition_ThisIsPtr,
 				"set_position_Injected", 1,
 				"set_position_Injected", 2,
-				{ UNITY_TRANSFORM_SETPOSITION, IL2CPP_RStr(UNITY_TRANSFORM_CLASS"::set_position_Injected") },
-				{ IL2CPP_RStr(UNITY_TRANSFORM_CLASS"::set_position_Injected(System.IntPtr,UnityEngine.Vector3&)"),
+				{},
+				{ UNITY_TRANSFORM_SETPOSITION,
+				  IL2CPP_RStr(UNITY_TRANSFORM_CLASS"::set_position_Injected"),
+				  IL2CPP_RStr(UNITY_TRANSFORM_CLASS"::set_position_Injected(System.IntPtr,UnityEngine.Vector3&)"),
 				  IL2CPP_RStr(UNITY_TRANSFORM_CLASS"::set_position_Injected(System.IntPtr,UnityEngine.Vector3)") });
 
 			resolveInstanceObjOrPtr(m_TransformFunctions.m_SetRotation_Injected, m_TransformFunctions.m_SetRotation_ThisIsPtr,
 				"set_rotation_Injected", 1,
 				"set_rotation_Injected", 2,
-				{ UNITY_TRANSFORM_SETROTATION, IL2CPP_RStr(UNITY_TRANSFORM_CLASS"::set_rotation_Injected") },
-				{ IL2CPP_RStr(UNITY_TRANSFORM_CLASS"::set_rotation_Injected(System.IntPtr,UnityEngine.Quaternion&)"),
+				{},
+				{ UNITY_TRANSFORM_SETROTATION,
+				  IL2CPP_RStr(UNITY_TRANSFORM_CLASS"::set_rotation_Injected"),
+				  IL2CPP_RStr(UNITY_TRANSFORM_CLASS"::set_rotation_Injected(System.IntPtr,UnityEngine.Quaternion&)"),
 				  IL2CPP_RStr(UNITY_TRANSFORM_CLASS"::set_rotation_Injected(System.IntPtr,UnityEngine.Quaternion)") });
 
 			resolveInstanceObjOrPtr(m_TransformFunctions.m_SetLocalPosition_Injected, m_TransformFunctions.m_SetLocalPosition_ThisIsPtr,
 				"set_localPosition_Injected", 1,
 				"set_localPosition_Injected", 2,
-				{ UNITY_TRANSFORM_SETLOCALPOSITION, IL2CPP_RStr(UNITY_TRANSFORM_CLASS"::set_localPosition_Injected") },
-				{ IL2CPP_RStr(UNITY_TRANSFORM_CLASS"::set_localPosition_Injected(System.IntPtr,UnityEngine.Vector3&)"),
+				{},
+				{ UNITY_TRANSFORM_SETLOCALPOSITION,
+				  IL2CPP_RStr(UNITY_TRANSFORM_CLASS"::set_localPosition_Injected"),
+				  IL2CPP_RStr(UNITY_TRANSFORM_CLASS"::set_localPosition_Injected(System.IntPtr,UnityEngine.Vector3&)"),
 				  IL2CPP_RStr(UNITY_TRANSFORM_CLASS"::set_localPosition_Injected(System.IntPtr,UnityEngine.Vector3)") });
 
 			resolveInstanceObjOrPtr(m_TransformFunctions.m_SetLocalScale_Injected, m_TransformFunctions.m_SetLocalScale_ThisIsPtr,
 				"set_localScale_Injected", 1,
 				"set_localScale_Injected", 2,
-				{ UNITY_TRANSFORM_SETLOCALSCALE, IL2CPP_RStr(UNITY_TRANSFORM_CLASS"::set_localScale_Injected") },
-				{ IL2CPP_RStr(UNITY_TRANSFORM_CLASS"::set_localScale_Injected(System.IntPtr,UnityEngine.Vector3&)"),
+				{},
+				{ UNITY_TRANSFORM_SETLOCALSCALE,
+				  IL2CPP_RStr(UNITY_TRANSFORM_CLASS"::set_localScale_Injected"),
+				  IL2CPP_RStr(UNITY_TRANSFORM_CLASS"::set_localScale_Injected(System.IntPtr,UnityEngine.Vector3&)"),
 				  IL2CPP_RStr(UNITY_TRANSFORM_CLASS"::set_localScale_Injected(System.IntPtr,UnityEngine.Vector3)") });
 
-			resolveInstanceObjOrPtr(m_TransformFunctions.m_SetPosition_Value, m_TransformFunctions.m_SetPositionValue_ThisIsPtr,
+			resolveValueInstance(m_TransformFunctions.m_SetPosition_Value, m_TransformFunctions.m_SetPositionValue_ThisIsPtr,
 				"set_position", 1,
-				"set_position_Injected", 2,
-				{ IL2CPP_RStr(UNITY_TRANSFORM_CLASS"::set_position") },
-				{ IL2CPP_RStr(UNITY_TRANSFORM_CLASS"::set_position_Injected(System.IntPtr,System.Single,System.Single,System.Single)") });
+				{ IL2CPP_RStr(UNITY_TRANSFORM_CLASS"::set_position") });
 
-			resolveInstanceObjOrPtr(m_TransformFunctions.m_SetRotation_Value, m_TransformFunctions.m_SetRotationValue_ThisIsPtr,
+			resolveValueInstance(m_TransformFunctions.m_SetRotation_Value, m_TransformFunctions.m_SetRotationValue_ThisIsPtr,
 				"set_rotation", 1,
-				"set_rotation_Injected", 2,
-				{ IL2CPP_RStr(UNITY_TRANSFORM_CLASS"::set_rotation") },
-				{ IL2CPP_RStr(UNITY_TRANSFORM_CLASS"::set_rotation_Injected(System.IntPtr)") });
+				{ IL2CPP_RStr(UNITY_TRANSFORM_CLASS"::set_rotation") });
 
-			resolveInstanceObjOrPtr(m_TransformFunctions.m_SetLocalPosition_Value, m_TransformFunctions.m_SetLocalPositionValue_ThisIsPtr,
+			resolveValueInstance(m_TransformFunctions.m_SetLocalPosition_Value, m_TransformFunctions.m_SetLocalPositionValue_ThisIsPtr,
 				"set_localPosition", 1,
-				"set_localPosition_Injected", 2,
-				{ IL2CPP_RStr(UNITY_TRANSFORM_CLASS"::set_localPosition") },
-				{ IL2CPP_RStr(UNITY_TRANSFORM_CLASS"::set_localPosition_Injected(System.IntPtr)") });
+				{ IL2CPP_RStr(UNITY_TRANSFORM_CLASS"::set_localPosition") });
 
-			resolveInstanceObjOrPtr(m_TransformFunctions.m_SetLocalScale_Value, m_TransformFunctions.m_SetLocalScaleValue_ThisIsPtr,
+			resolveValueInstance(m_TransformFunctions.m_SetLocalScale_Value, m_TransformFunctions.m_SetLocalScaleValue_ThisIsPtr,
 				"set_localScale", 1,
-				"set_localScale_Injected", 2,
-				{ IL2CPP_RStr(UNITY_TRANSFORM_CLASS"::set_localScale") },
-				{ IL2CPP_RStr(UNITY_TRANSFORM_CLASS"::set_localScale_Injected(System.IntPtr)") });
+				{ IL2CPP_RStr(UNITY_TRANSFORM_CLASS"::set_localScale") });
 		}
 	}
 }

@@ -1,12 +1,17 @@
 #pragma once
 
+#include <Windows.h>
+#include <string>
+
 namespace IL2CPP
 {
 	struct Globals_t
 	{
 		HMODULE m_GameAssembly = nullptr;
+		std::string m_GameAssemblyName;
+		bool m_Initialized = false;
 	};
-	Globals_t Globals;
+	inline Globals_t Globals;
 
 	struct Functions_t
 	{
@@ -43,5 +48,5 @@ namespace IL2CPP
 		void* m_FieldStaticGetValue = nullptr;
 		void* m_FieldStaticSetValue = nullptr;
 	};
-	Functions_t Functions;
+	inline Functions_t Functions;
 }

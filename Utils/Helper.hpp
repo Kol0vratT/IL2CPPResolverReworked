@@ -4,7 +4,7 @@ namespace IL2CPP
 {
 	namespace Helper
 	{
-		Unity::CComponent* GetMonoBehaviour()
+		inline Unity::CComponent* GetMonoBehaviour()
 		{
 			// In Unity 6 (6000.x) some GameObject icalls (notably GetComponentsInternal)
 			// are frequently switched to *_Injected and/or require different argument marshalling.

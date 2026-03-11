@@ -9,22 +9,52 @@ namespace Unity
 		uintptr_t m_uMaxLength = 0;
 		T* m_pValues = nullptr;
 
-		uintptr_t GetData()
+		inline uintptr_t GetData() const
 		{
 			return reinterpret_cast<uintptr_t>(&m_pValues);
 		}
 
-		T& operator[](unsigned int m_uIndex)
+		inline T* Data()
 		{
-			return *reinterpret_cast<T*>(GetData() + sizeof(T) * m_uIndex);
+			return reinterpret_cast<T*>(&m_pValues);
 		}
 
-		T& At(unsigned int m_uIndex)
+		inline const T* Data() const
+		{
+			return reinterpret_cast<const T*>(&m_pValues);
+		}
+
+		inline uintptr_t Size() const
+		{
+			return m_uMaxLength;
+		}
+
+		inline bool Empty() const
+		{
+			return m_uMaxLength == 0;
+		}
+
+		inline T& operator[](unsigned int m_uIndex)
+		{
+			return Data()[m_uIndex];
+		}
+
+		inline const T& operator[](unsigned int m_uIndex) const
+		{
+			return Data()[m_uIndex];
+		}
+
+		inline T& At(unsigned int m_uIndex)
 		{
 			return operator[](m_uIndex);
 		}
 
-		void Insert(T* m_pArray, uintptr_t m_uSize, uintptr_t m_uIndex = 0)
+		inline const T& At(unsigned int m_uIndex) const
+		{
+			return operator[](m_uIndex);
+		}
+
+		inline void Insert(T* m_pArray, uintptr_t m_uSize, uintptr_t m_uIndex = 0)
 		{
 			if ((m_uSize + m_uIndex) >= m_uMaxLength)
 			{
@@ -38,27 +68,24 @@ namespace Unity
 				operator[](u + m_uIndex) = m_pArray[u];
 		}
 
-		void Fill(T m_tValue)
+		inline void Fill(T m_tValue)
 		{
 			for (uintptr_t u = 0; m_uMaxLength > u; ++u)
 				operator[](u) = m_tValue;
 		}
 
-		void RemoveAt(unsigned int m_uIndex)
+		inline void RemoveAt(unsigned int m_uIndex)
 		{
 			if (m_uIndex >= m_uMaxLength)
 				return;
 
-			if (m_uMaxLength > (m_uIndex + 1))
-			{
-				for (unsigned int u = m_uIndex; (static_cast<unsigned int>(m_uMaxLength) - m_uIndex) > u; ++u)
-					operator[](u) = operator[](u + 1);
-			}
+			for (uintptr_t u = m_uIndex; (u + 1U) < m_uMaxLength; ++u)
+				operator[](static_cast<unsigned int>(u)) = operator[](static_cast<unsigned int>(u + 1U));
 
 			--m_uMaxLength;
 		}
 
-		void RemoveRange(unsigned int m_uIndex, unsigned int m_uCount)
+		inline void RemoveRange(unsigned int m_uIndex, unsigned int m_uCount)
 		{
 			if (m_uCount == 0)
 				m_uCount = 1;
@@ -67,16 +94,13 @@ namespace Unity
 			if (m_uTotal >= m_uMaxLength)
 				return;
 
-			if (m_uMaxLength > (m_uTotal + 1))
-			{
-				for (unsigned int u = m_uIndex; (static_cast<unsigned int>(m_uMaxLength) - m_uTotal) >= u; ++u)
-					operator[](u) = operator[](u + m_uCount);
-			}
+			for (uintptr_t u = m_uIndex; (u + m_uCount) < m_uMaxLength; ++u)
+				operator[](static_cast<unsigned int>(u)) = operator[](static_cast<unsigned int>(u + m_uCount));
 
 			m_uMaxLength -= m_uCount;
 		}
 
-		void RemoveAll()
+		inline void RemoveAll()
 		{
 			if (m_uMaxLength > 0)
 			{
@@ -92,6 +116,6 @@ namespace Unity
 	{
 		il2cppArray<T>* m_pListArray;
 
-		il2cppArray<T>* ToArray() { return m_pListArray; }
+		inline il2cppArray<T>* ToArray() { return m_pListArray; }
 	};
 }

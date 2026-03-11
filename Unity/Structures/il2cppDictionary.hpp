@@ -13,7 +13,7 @@ namespace Unity
 			TValue m_tValue;
 		};
 		il2cppArray<int>* m_pBuckets;
-		il2cppArray<Entry*>* m_pEntries;
+		il2cppArray<Entry>* m_pEntries;
 		int m_iCount;
 		int m_iVersion;
 		int m_iFreeList;
@@ -22,40 +22,47 @@ namespace Unity
 		void* m_pKeys;
 		void* m_pValues;
 
-		Entry* GetEntry()
+		inline Entry* GetEntry()
 		{
-			return (Entry*)m_pEntries->GetData();
+			return m_pEntries ? m_pEntries->Data() : nullptr;
 		}
 
-		TKey GetKeyByIndex(int iIndex)
+		inline TKey GetKeyByIndex(int iIndex)
 		{
 			TKey tKey = { 0 };
 			
 			Entry* pEntry = GetEntry();
-			if (pEntry)
+			if (pEntry && iIndex >= 0 && iIndex < m_iCount)
 				tKey = pEntry[iIndex].m_tKey;
 
 			return tKey;
 		}
 
-		TValue GetValueByIndex(int iIndex)
+		inline TValue GetValueByIndex(int iIndex)
 		{
 			TValue tValue = { 0 };
 
 			Entry* pEntry = GetEntry();
-			if (pEntry)
+			if (pEntry && iIndex >= 0 && iIndex < m_iCount)
 				tValue = pEntry[iIndex].m_tValue;
 
 			return tValue;
 		}
 
-		TValue GetValueByKey(TKey tKey)
+		inline TValue GetValueByKey(TKey tKey)
 		{
 			TValue tValue = { 0 };
-			for (int i = 0; i < m_iCount; i++) {
-				if (GetEntry()[i].m_tKey == tKey)
-					tValue =  GetEntry()[i].m_tValue;
+
+			Entry* pEntry = GetEntry();
+			if (!pEntry)
+				return tValue;
+
+			for (int i = 0; i < m_iCount; ++i)
+			{
+				if (pEntry[i].m_tKey == tKey)
+					tValue = pEntry[i].m_tValue;
 			}
+
 			return tValue;
 		}
 	};

@@ -6,21 +6,92 @@
 
 namespace IL2CPP
 {
-	// Resolve a managed method's native code pointer by name/argcount.
-	// This is often more stable across Unity versions than icall name strings.
+	namespace ResolverCache
+	{
+		inline std::unordered_map<std::string, void*> m_IcallCache;
+		inline std::unordered_map<std::string, void*> m_ManagedMethodCache;
+		inline std::mutex m_Mutex;
+	}
+
+	inline std::string BuildManagedMethodCacheKey(const char* m_ClassName, const char* m_MethodName, int m_ArgCount)
+	{
+		std::string m_Key = m_ClassName ? m_ClassName : "";
+		m_Key += "::";
+		m_Key += m_MethodName ? m_MethodName : "";
+		m_Key += "#argc=";
+		m_Key += std::to_string(m_ArgCount);
+		return m_Key;
+	}
+
+	inline std::string BuildManagedMethodCacheKey(const char* m_ClassName, const char* m_MethodName, std::initializer_list<const char*> m_ParamTypes)
+	{
+		std::string m_Key = m_ClassName ? m_ClassName : "";
+		m_Key += "::";
+		m_Key += m_MethodName ? m_MethodName : "";
+		m_Key += "#sig=";
+
+		for (const char* m_ParamType : m_ParamTypes)
+		{
+			m_Key += m_ParamType ? m_ParamType : "<null>";
+			m_Key += ';';
+		}
+
+		return m_Key;
+	}
+
+	inline void ClearResolverCaches()
+	{
+		std::lock_guard<std::mutex> m_Lock(ResolverCache::m_Mutex);
+		ResolverCache::m_IcallCache.clear();
+		ResolverCache::m_ManagedMethodCache.clear();
+	}
+
 	inline void* ResolveUnityMethod(const char* m_ClassName, const char* m_MethodName, int m_ArgCount)
 	{
 		if (!m_ClassName || !m_MethodName)
 			return nullptr;
 
-		Unity::il2cppClass* klass = IL2CPP::Class::Find(m_ClassName);
-		if (!klass)
+		const std::string m_CacheKey = BuildManagedMethodCacheKey(m_ClassName, m_MethodName, m_ArgCount);
+		{
+			std::lock_guard<std::mutex> m_Lock(ResolverCache::m_Mutex);
+			auto m_It = ResolverCache::m_ManagedMethodCache.find(m_CacheKey);
+			if (m_It != ResolverCache::m_ManagedMethodCache.end())
+				return m_It->second;
+		}
+
+		Unity::il2cppClass* m_pClass = IL2CPP::Class::Find(m_ClassName);
+		if (!m_pClass)
 			return nullptr;
 
-		return IL2CPP::Class::Utils::GetMethodPointer(klass, m_MethodName, m_ArgCount);
+		void* m_pMethod = IL2CPP::Class::Utils::GetMethodPointer(m_pClass, m_MethodName, m_ArgCount);
+		std::lock_guard<std::mutex> m_Lock(ResolverCache::m_Mutex);
+		ResolverCache::m_ManagedMethodCache.emplace(m_CacheKey, m_pMethod);
+		return m_pMethod;
 	}
 
-	// Thin wrapper around il2cpp_resolve_icall
+	inline void* ResolveUnityMethod(const char* m_ClassName, const char* m_MethodName, std::initializer_list<const char*> m_ParamTypes)
+	{
+		if (!m_ClassName || !m_MethodName)
+			return nullptr;
+
+		const std::string m_CacheKey = BuildManagedMethodCacheKey(m_ClassName, m_MethodName, m_ParamTypes);
+		{
+			std::lock_guard<std::mutex> m_Lock(ResolverCache::m_Mutex);
+			auto m_It = ResolverCache::m_ManagedMethodCache.find(m_CacheKey);
+			if (m_It != ResolverCache::m_ManagedMethodCache.end())
+				return m_It->second;
+		}
+
+		Unity::il2cppClass* m_pClass = IL2CPP::Class::Find(m_ClassName);
+		if (!m_pClass)
+			return nullptr;
+
+		void* m_pMethod = IL2CPP::Class::Utils::GetMethodPointer(m_pClass, m_MethodName, m_ParamTypes);
+		std::lock_guard<std::mutex> m_Lock(ResolverCache::m_Mutex);
+		ResolverCache::m_ManagedMethodCache.emplace(m_CacheKey, m_pMethod);
+		return m_pMethod;
+	}
+
 	inline void* ResolveCall(const char* m_Name)
 	{
 		if (!Functions.m_ResolveFunction || !m_Name)
@@ -29,45 +100,60 @@ namespace IL2CPP
 		return reinterpret_cast<void* (IL2CPP_CALLING_CONVENTION)(const char*)>(Functions.m_ResolveFunction)(m_Name);
 	}
 
-	// Cached icall resolver (safe for header-only usage)
 	inline void* ResolveCallCached(const char* m_Name)
 	{
-		static std::unordered_map<std::string, void*> s_Cache;
-		auto it = s_Cache.find(m_Name);
-		if (it != s_Cache.end())
-			return it->second;
+		if (!m_Name)
+			return nullptr;
 
-		void* p = ResolveCall(m_Name);
-		s_Cache.emplace(m_Name, p);
-		return p;
+		{
+			std::lock_guard<std::mutex> m_Lock(ResolverCache::m_Mutex);
+			auto m_It = ResolverCache::m_IcallCache.find(m_Name);
+			if (m_It != ResolverCache::m_IcallCache.end())
+				return m_It->second;
+		}
+
+		void* m_pCall = ResolveCall(m_Name);
+		std::lock_guard<std::mutex> m_Lock(ResolverCache::m_Mutex);
+		ResolverCache::m_IcallCache.emplace(m_Name, m_pCall);
+		return m_pCall;
 	}
 
-	// Try multiple icall names (Unity 6 often requires *_Injected or a fully qualified signature)
 	inline void* ResolveCallAny(std::initializer_list<const char*> m_Names)
 	{
-		for (const char* n : m_Names)
+		for (const char* m_pName : m_Names)
 		{
-			if (!n)
+			if (!m_pName)
 				continue;
-			if (void* p = ResolveCallCached(n))
-				return p;
+
+			if (void* m_pCall = ResolveCallCached(m_pName))
+				return m_pCall;
 		}
+
 		return nullptr;
 	}
 
-	// Prefer resolving managed method pointers (more stable across Unity versions)
-	// Falls back to icall resolution if needed.
 	inline void* ResolveUnityMethodOrIcall(const char* m_ClassName, const char* m_MethodName, int m_ArgCount,
 		std::initializer_list<const char*> m_IcallCandidates = {})
 	{
-		// Resolve by managed metadata first
-		if (void* mp = ResolveUnityMethod(m_ClassName, m_MethodName, m_ArgCount))
-			return mp;
+		if (void* m_pMethod = ResolveUnityMethod(m_ClassName, m_MethodName, m_ArgCount))
+			return m_pMethod;
 
-		// Fallback: icall candidates (old name, injected name, fully qualified signature, etc.)
-		if (m_IcallCandidates.size() > 0)
-			return ResolveCallAny(m_IcallCandidates);
+		if (!m_IcallCandidates.size())
+			return nullptr;
 
-		return nullptr;
+		return ResolveCallAny(m_IcallCandidates);
+	}
+
+	inline void* ResolveUnityMethodOrIcall(const char* m_ClassName, const char* m_MethodName,
+		std::initializer_list<const char*> m_ParamTypes,
+		std::initializer_list<const char*> m_IcallCandidates = {})
+	{
+		if (void* m_pMethod = ResolveUnityMethod(m_ClassName, m_MethodName, m_ParamTypes))
+			return m_pMethod;
+
+		if (!m_IcallCandidates.size())
+			return nullptr;
+
+		return ResolveCallAny(m_IcallCandidates);
 	}
 }

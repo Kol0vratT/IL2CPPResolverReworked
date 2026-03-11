@@ -4,7 +4,7 @@ namespace IL2CPP
 {
 	namespace Domain
 	{
-		void* Get()
+		inline void* Get()
 		{
 			if (!Functions.m_DomainGet)
 				return nullptr;
@@ -12,7 +12,7 @@ namespace IL2CPP
 			return reinterpret_cast<void*(IL2CPP_CALLING_CONVENTION)()>(Functions.m_DomainGet)();
 		}
 
-		Unity::il2cppAssembly** GetAssemblies(size_t* m_Size)
+		inline Unity::il2cppAssembly** GetAssemblies(size_t* m_Size)
 		{
 			if (!Functions.m_DomainGetAssemblies)
 				return nullptr;

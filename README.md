@@ -3,6 +3,21 @@
 `IL2CPP_Resolver Reworked` is a header-first C++ runtime bridge for Unity IL2CPP games.  
 It resolves IL2CPP exports, resolves managed methods and icalls, and provides a defensive Unity API layer for common engine classes.
 
+## Recent Rework Update
+
+- Converted the resolver to a correct `header-only` layout with inline state/functions.
+- Added reset and diagnostics helpers:
+  - `IL2CPP::IsInitialized()`
+  - `IL2CPP::GetLoadedModuleName()`
+  - `IL2CPP::GetInitializationReport()`
+  - `IL2CPP::Reset(bool clearModuleHandle = false)`
+- Added thread-safe caches for `System.Type`, class lookup, and icall/method resolution.
+- Fixed overload resolution, string handling, arrays/dictionaries access, and math helper issues.
+- Reworked Unity wrapper hierarchy so `Camera`, `Behaviour`, `Component`, `GameObject`, `Transform`, and `Rigidbody` better match Unity's runtime model.
+- Added wrappers for `Behaviour`, `PlayerPrefs`, and `Resources`.
+- Made optional Unity APIs stripping-aware so missing methods are treated as unavailable instead of hard failure.
+- Added a minimal DLL sample project in `IL2CPP_Resolver_Sample_DLL/` with console logging and main-thread smoke tests.
+
 ## What It Does
 
 - Initializes IL2CPP from a loaded game module (`GameAssembly.dll` by default).
@@ -11,7 +26,10 @@ It resolves IL2CPP exports, resolves managed methods and icalls, and provides a 
 - Supports custom export resolver callbacks for protected targets.
 - Optionally enables heuristic export-name matching.
 - Resolves managed Unity methods first, then falls back to icalls.
+- Resolves overloaded managed methods by full parameter signature when needed.
 - Exposes reusable C++ wrappers for many UnityEngine APIs.
+- Stays link-safe as a true header-only library across multiple translation units.
+- Includes reset/report utilities, resolver caches, and scoped IL2CPP thread attachment.
 - Adds broad null checks and fallback paths to reduce crash risk across Unity versions.
 
 ## Repository Layout (Library Only)
@@ -29,11 +47,13 @@ It resolves IL2CPP exports, resolves managed methods and icalls, and provides a 
 - `API/`
   - Core IL2CPP utilities: domain, classes, strings, threads, callbacks, method/icall resolution.
 - `Unity/API/`
-  - UnityEngine wrappers (Application, Camera, Cursor, Debug, GameObject, Input, LayerMask, Object, RenderSettings, Rigidbody, SceneManager, Screen, Time, Transform).
+  - UnityEngine wrappers (Application, Behaviour, Camera, Component, Cursor, Debug, GameObject, Input, LayerMask, Object, PlayerPrefs, RenderSettings, Resources, Rigidbody, SceneManager, Screen, Time, Transform).
 - `Unity/Structures/`
   - IL2CPP/Unity data structures (`il2cppObject`, `il2cppClass`, arrays, strings, vectors, quaternions, etc.).
 - `Utils/`
   - Hashing, vtable patching/search helpers, safe MonoBehaviour resolver helper.
+- `IL2CPP_Resolver_Sample_DLL/`
+  - Minimal DLL template with console logging and main-thread smoke tests.
 
 ## Initialization Pipeline
 
@@ -46,6 +66,7 @@ It resolves IL2CPP exports, resolves managed methods and icalls, and provides a 
 4. Resolves optional/version-dependent exports if available.
 5. Initializes all Unity API wrappers.
 6. Pre-caches queued `System.Type` objects via `SystemTypeCache::Initializer`.
+7. Marks the resolver initialized and keeps an export-resolution report for diagnostics.
 
 ### Required Exports
 
@@ -80,7 +101,14 @@ If initialization fails, inspect:
 
 ```cpp
 const char* reason = IL2CPP::UnityAPI::GetLastInitError();
+std::string report = IL2CPP::GetInitializationReport();
 ```
+
+You can also query:
+
+- `IL2CPP::IsInitialized()`
+- `IL2CPP::GetLoadedModuleName()`
+- `IL2CPP::Reset(bool clearModuleHandle = false)`
 
 ## Export Resolver Flexibility
 
@@ -102,10 +130,12 @@ IL2CPP::SetHeuristicExportResolution(true); // disabled by default
 ### `API/ResolveCall.hpp`
 
 - `IL2CPP::ResolveUnityMethod(className, methodName, argCount)`
+- `IL2CPP::ResolveUnityMethod(className, methodName, { "Param.Type", ... })`
 - `IL2CPP::ResolveCall(icallName)`
 - `IL2CPP::ResolveCallCached(icallName)`
 - `IL2CPP::ResolveCallAny({ candidates... })`
 - `IL2CPP::ResolveUnityMethodOrIcall(...)`
+- `IL2CPP::ClearResolverCaches()`
 
 Design: prefer managed method pointer resolution (usually more stable), then fallback to icalls.
 
@@ -150,6 +180,8 @@ Design: prefer managed method pointer resolution (usually more stable), then fal
 - `IL2CPP::Thread::Detach(thread)`
 - `IL2CPP::Thread::Create(startFn, endFn)`  
   Creates native thread and auto attach/detach to IL2CPP domain.
+- `IL2CPP::ScopedThreadAttachment`  
+  RAII attach/detach helper for the current native thread.
 
 ### `API/Callback.hpp`
 
@@ -161,6 +193,11 @@ Design: prefer managed method pointer resolution (usually more stable), then fal
   - `IL2CPP::Callback::Uninitialize()`
 
 Internally uses vtable scanning plus function replacement (`Utils/VTable.hpp`).
+
+### `API/Class.hpp`
+
+- Class lookups are cached by fully qualified name.
+- Signature matching now compares parameter types correctly on both legacy and modern layouts.
 
 ## Unity API Wrappers (`Unity/API/`)
 
@@ -176,6 +213,11 @@ All wrappers resolve function pointers defensively and generally support both:
 - Paths: `GetDataPath`, `GetPersistentDataPath`, `GetStreamingAssetsPath`
 - Metadata: `GetProductName`, `GetIdentifier`, `GetUnityVersion`
 - Quit: `Quit(int exitCode = 0)` with overload compatibility handling
+
+### `Behaviour.hpp`
+
+- `GetEnabled`, `SetEnabled`
+- `GetIsActiveAndEnabled`
 
 ### `Camera.hpp`
 
@@ -241,6 +283,19 @@ All wrappers resolve function pointers defensively and generally support both:
   - `FindObjectsOfType<T>(type, includeInactive)`
   - `FindObjectOfType<T>(...)`
 - Supports legacy `FindObjectsOfType` and modern `FindObjectsByType` fallbacks.
+
+### `PlayerPrefs.hpp`
+
+- `GetInt`, `GetFloat`, `GetString`, `GetStringUtf8`
+- `SetInt`, `SetFloat`, `SetString`
+- `HasKey`, `DeleteKey`, `DeleteAll`, `Save`
+
+### `Resources.hpp`
+
+- `Load(path)`
+- `Load(path, type)` / `Load(path, "Namespace.Type")`
+- `FindObjectsOfTypeAll<T>(...)`
+- `UnloadUnusedAssets()`
 
 ### `RenderSettings.hpp`
 
@@ -407,5 +462,7 @@ if (p)
 - Optional exports are not treated as hard failures.
 - Resolver cache can be rebuilt per init attempt.
 - Method-first resolution reduces dependency on unstable icall names.
+- Overloaded methods can be resolved by explicit parameter type lists.
+- Resolver/global state is safe to include from multiple translation units.
 
 This gives safer behavior across mixed Unity/IL2CPP versions and modified builds, while still allowing manual resolver extension for heavily protected games.

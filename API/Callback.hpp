@@ -14,14 +14,14 @@ namespace IL2CPP
 	{
 		namespace OnUpdate
 		{
-			CallbackHook_t m_CallbackHook;
+			inline CallbackHook_t m_CallbackHook;
 
-			void Add(void* m_pFunction)
+			inline void Add(void* m_pFunction)
 			{
 				m_CallbackHook.m_Funcs.emplace_back(m_pFunction);
 			}
 
-			void __fastcall Hook(void* rcx)
+			inline void __fastcall Hook(void* rcx)
 			{
 				for (void* m_Func : m_CallbackHook.m_Funcs)
 					reinterpret_cast<void(*)()>(m_Func)();
@@ -32,14 +32,14 @@ namespace IL2CPP
 
 		namespace OnLateUpdate
 		{
-			CallbackHook_t m_CallbackHook;
+			inline CallbackHook_t m_CallbackHook;
 
-			void Add(void* m_pFunction)
+			inline void Add(void* m_pFunction)
 			{
 				m_CallbackHook.m_Funcs.emplace_back(m_pFunction);
 			}
 
-			void __fastcall Hook(void* rcx)
+			inline void __fastcall Hook(void* rcx)
 			{
 				for (void* m_Func : m_CallbackHook.m_Funcs)
 					reinterpret_cast<void(*)()>(m_Func)();
@@ -48,16 +48,13 @@ namespace IL2CPP
 			}
 		}
 
-		void Initialize()
+		inline void Initialize()
 		{
-			void* m_IL2CPPThread = Thread::Attach(IL2CPP::Domain::Get());
+			IL2CPP::ScopedThreadAttachment m_Attachment;
 
 			Unity::CComponent* mb = IL2CPP::Helper::GetMonoBehaviour();
 			if (!mb || !mb->m_CachedPtr)
-			{
-				IL2CPP::Thread::Detach(m_IL2CPPThread);
 				return;
-			}
 
 			void** m_MonoBehaviourVTable = *reinterpret_cast<void***>(mb->m_CachedPtr);
 			if (m_MonoBehaviourVTable)
@@ -84,8 +81,6 @@ namespace IL2CPP
 #endif
 			}
 
-			IL2CPP::Thread::Detach(m_IL2CPPThread);
-
 			// Replace (Hook) - only if we successfully located targets
 			if (OnUpdate::m_CallbackHook.m_VFunc)
 				Utils::VTable::ReplaceFunction(OnUpdate::m_CallbackHook.m_VFunc, OnUpdate::Hook, &OnUpdate::m_CallbackHook.m_Original);
@@ -93,10 +88,13 @@ namespace IL2CPP
 				Utils::VTable::ReplaceFunction(OnLateUpdate::m_CallbackHook.m_VFunc, OnLateUpdate::Hook, &OnLateUpdate::m_CallbackHook.m_Original);
 		}
 
-		void Uninitialize()
+		inline void Uninitialize()
 		{
-			Utils::VTable::ReplaceFunction(OnUpdate::m_CallbackHook.m_VFunc, OnUpdate::m_CallbackHook.m_Original);
-			Utils::VTable::ReplaceFunction(OnLateUpdate::m_CallbackHook.m_VFunc, OnLateUpdate::m_CallbackHook.m_Original);
+			if (OnUpdate::m_CallbackHook.m_VFunc && OnUpdate::m_CallbackHook.m_Original)
+				Utils::VTable::ReplaceFunction(OnUpdate::m_CallbackHook.m_VFunc, OnUpdate::m_CallbackHook.m_Original);
+
+			if (OnLateUpdate::m_CallbackHook.m_VFunc && OnLateUpdate::m_CallbackHook.m_Original)
+				Utils::VTable::ReplaceFunction(OnLateUpdate::m_CallbackHook.m_VFunc, OnLateUpdate::m_CallbackHook.m_Original);
 		}
 	}
 }

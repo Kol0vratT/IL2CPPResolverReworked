@@ -5,10 +5,14 @@ namespace Unity
 	namespace Obfuscators
 	{
         // Should do the basic work
-        std::string ROT_String(const char* pString, int iValue)
+        inline std::string ROT_String(const char* pString, int iValue)
         {
+            if (!pString)
+                return {};
+
             std::string sRet;
             size_t sSize = strlen(pString);
+            sRet.reserve(sSize + 1);
             for (size_t i = 0; sSize > i; ++i)
             {
                 bool bIsUppercase = pString[i] >= 'A' && 'Z' >= pString[i];

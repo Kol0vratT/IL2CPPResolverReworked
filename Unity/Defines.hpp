@@ -23,6 +23,13 @@
 #define UNITY_COMPONENT_GETGAMEOBJECT								IL2CPP_RStr(UNITY_COMPONENT_CLASS"::get_gameObject")
 #define UNITY_COMPONENT_GETTRANSFORM								IL2CPP_RStr(UNITY_COMPONENT_CLASS"::get_transform")
 
+// Behaviour
+#define UNITY_BEHAVIOUR_CLASS                                       "UnityEngine.Behaviour"
+
+#define UNITY_BEHAVIOUR_GETENABLED                                  IL2CPP_RStr(UNITY_BEHAVIOUR_CLASS"::get_enabled")
+#define UNITY_BEHAVIOUR_SETENABLED                                  IL2CPP_RStr(UNITY_BEHAVIOUR_CLASS"::set_enabled")
+#define UNITY_BEHAVIOUR_GETISACTIVEANDENABLED                       IL2CPP_RStr(UNITY_BEHAVIOUR_CLASS"::get_isActiveAndEnabled")
+
 // GameObject
 #define UNITY_GAMEOBJECT_CLASS										"UnityEngine.GameObject"
 
@@ -121,6 +128,31 @@
 #define UNITY_APPLICATION_GET_UNITYVERSION                          IL2CPP_RStr(UNITY_APPLICATION_CLASS"::get_unityVersion")
 #define UNITY_APPLICATION_QUIT0                                     IL2CPP_RStr(UNITY_APPLICATION_CLASS"::Quit")
 #define UNITY_APPLICATION_QUIT1                                     IL2CPP_RStr(UNITY_APPLICATION_CLASS"::Quit(System.Int32)")
+
+// Resources
+#define UNITY_RESOURCES_CLASS                                       "UnityEngine.Resources"
+
+#define UNITY_RESOURCES_LOAD1                                       IL2CPP_RStr(UNITY_RESOURCES_CLASS"::Load(System.String)")
+#define UNITY_RESOURCES_LOAD2                                       IL2CPP_RStr(UNITY_RESOURCES_CLASS"::Load(System.String,System.Type)")
+#define UNITY_RESOURCES_FINDOBJECTSOFTYPEALL                        IL2CPP_RStr(UNITY_RESOURCES_CLASS"::FindObjectsOfTypeAll(System.Type)")
+#define UNITY_RESOURCES_UNLOADUNUSEDASSETS                          IL2CPP_RStr(UNITY_RESOURCES_CLASS"::UnloadUnusedAssets")
+
+// PlayerPrefs
+#define UNITY_PLAYERPREFS_CLASS                                     "UnityEngine.PlayerPrefs"
+
+#define UNITY_PP_GETINT1                                            IL2CPP_RStr(UNITY_PLAYERPREFS_CLASS"::GetInt(System.String)")
+#define UNITY_PP_GETINT2                                            IL2CPP_RStr(UNITY_PLAYERPREFS_CLASS"::GetInt(System.String,System.Int32)")
+#define UNITY_PP_GETFLOAT1                                          IL2CPP_RStr(UNITY_PLAYERPREFS_CLASS"::GetFloat(System.String)")
+#define UNITY_PP_GETFLOAT2                                          IL2CPP_RStr(UNITY_PLAYERPREFS_CLASS"::GetFloat(System.String,System.Single)")
+#define UNITY_PP_GETSTRING1                                         IL2CPP_RStr(UNITY_PLAYERPREFS_CLASS"::GetString(System.String)")
+#define UNITY_PP_GETSTRING2                                         IL2CPP_RStr(UNITY_PLAYERPREFS_CLASS"::GetString(System.String,System.String)")
+#define UNITY_PP_SETINT                                             IL2CPP_RStr(UNITY_PLAYERPREFS_CLASS"::SetInt")
+#define UNITY_PP_SETFLOAT                                           IL2CPP_RStr(UNITY_PLAYERPREFS_CLASS"::SetFloat")
+#define UNITY_PP_SETSTRING                                          IL2CPP_RStr(UNITY_PLAYERPREFS_CLASS"::SetString")
+#define UNITY_PP_HASKEY                                             IL2CPP_RStr(UNITY_PLAYERPREFS_CLASS"::HasKey")
+#define UNITY_PP_DELETEKEY                                          IL2CPP_RStr(UNITY_PLAYERPREFS_CLASS"::DeleteKey")
+#define UNITY_PP_DELETEALL                                          IL2CPP_RStr(UNITY_PLAYERPREFS_CLASS"::DeleteAll")
+#define UNITY_PP_SAVE                                               IL2CPP_RStr(UNITY_PLAYERPREFS_CLASS"::Save")
 
 // SceneManagement
 #define UNITY_SCENEMANAGER_CLASS                                    "UnityEngine.SceneManagement.SceneManager"

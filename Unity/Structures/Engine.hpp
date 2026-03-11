@@ -17,17 +17,22 @@ namespace Unity
 		Vector3() { x = y = z = 0.f; }
 		Vector3(float f1, float f2, float f3) { x = f1; y = f2; z = f3; }
 		
-		float Length()
+		inline float LengthSqr() const
 		{
 			return x * x + y * y + z * z;
 		}
 		
-		float Dot(Vector3 b)
+		inline float Length() const
+		{
+			return sqrtf(LengthSqr());
+		}
+		
+		inline float Dot(const Vector3& b) const
 		{
 			return x * b.x + y * b.y + z * b.z;
 		}
 
-		Vector3 Normalize()
+		inline Vector3 Normalize() const
 		{
 			float len = Length();
 			if (len > 0)

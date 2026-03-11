@@ -15,7 +15,7 @@ namespace Unity
 	};
 	inline RigidbodyFunctions_t m_RigidbodyFunctions;
 
-	class CRigidbody : public IL2CPP::CClass
+	class CRigidbody : public CComponent
 	{
 	public:
 		bool GetDetectCollisions()
@@ -23,8 +23,10 @@ namespace Unity
 			if (!this || !m_RigidbodyFunctions.m_GetDetectCollisions)
 				return false;
 
-			void* selfArg = m_RigidbodyFunctions.m_GetDetectCollisions_ThisIsPtr ? this->m_CachedPtr : (void*)this;
-			if (!selfArg) return false;
+			void* selfArg = m_RigidbodyFunctions.m_GetDetectCollisions_ThisIsPtr ? this->m_CachedPtr : this->GetManagedObjectPointer();
+			if (!selfArg)
+				return false;
+
 			return reinterpret_cast<bool(UNITY_CALLING_CONVENTION)(void*)>(m_RigidbodyFunctions.m_GetDetectCollisions)(selfArg);
 		}
 
@@ -33,8 +35,10 @@ namespace Unity
 			if (!this || !m_RigidbodyFunctions.m_SetDetectCollisions)
 				return;
 
-			void* selfArg = m_RigidbodyFunctions.m_SetDetectCollisions_ThisIsPtr ? this->m_CachedPtr : (void*)this;
-			if (!selfArg) return;
+			void* selfArg = m_RigidbodyFunctions.m_SetDetectCollisions_ThisIsPtr ? this->m_CachedPtr : this->GetManagedObjectPointer();
+			if (!selfArg)
+				return;
+
 			reinterpret_cast<void(UNITY_CALLING_CONVENTION)(void*, bool)>(m_RigidbodyFunctions.m_SetDetectCollisions)(selfArg, m_bDetect);
 		}
 
@@ -46,16 +50,20 @@ namespace Unity
 			if (m_RigidbodyFunctions.m_GetVelocity_Injected)
 			{
 				Vector3 v{};
-				void* selfArg = m_RigidbodyFunctions.m_GetVelocity_ThisIsPtr ? this->m_CachedPtr : (void*)this;
-				if (!selfArg) return {};
+				void* selfArg = m_RigidbodyFunctions.m_GetVelocity_ThisIsPtr ? this->m_CachedPtr : this->GetManagedObjectPointer();
+				if (!selfArg)
+					return {};
+
 				reinterpret_cast<void(UNITY_CALLING_CONVENTION)(void*, Vector3&)>(m_RigidbodyFunctions.m_GetVelocity_Injected)(selfArg, v);
 				return v;
 			}
 
 			if (m_RigidbodyFunctions.m_GetVelocity_Value)
 			{
-				void* selfArg = m_RigidbodyFunctions.m_GetVelocityValue_ThisIsPtr ? this->m_CachedPtr : (void*)this;
-				if (!selfArg) return {};
+				void* selfArg = m_RigidbodyFunctions.m_GetVelocityValue_ThisIsPtr ? this->m_CachedPtr : this->GetManagedObjectPointer();
+				if (!selfArg)
+					return {};
+
 				return reinterpret_cast<Vector3(UNITY_CALLING_CONVENTION)(void*)>(m_RigidbodyFunctions.m_GetVelocity_Value)(selfArg);
 			}
 
@@ -69,16 +77,20 @@ namespace Unity
 
 			if (m_RigidbodyFunctions.m_SetVelocity_Injected)
 			{
-				void* selfArg = m_RigidbodyFunctions.m_SetVelocity_ThisIsPtr ? this->m_CachedPtr : (void*)this;
-				if (!selfArg) return;
+				void* selfArg = m_RigidbodyFunctions.m_SetVelocity_ThisIsPtr ? this->m_CachedPtr : this->GetManagedObjectPointer();
+				if (!selfArg)
+					return;
+
 				reinterpret_cast<void(UNITY_CALLING_CONVENTION)(void*, Vector3&)>(m_RigidbodyFunctions.m_SetVelocity_Injected)(selfArg, m_vVector);
 				return;
 			}
 
 			if (m_RigidbodyFunctions.m_SetVelocity_Value)
 			{
-				void* selfArg = m_RigidbodyFunctions.m_SetVelocityValue_ThisIsPtr ? this->m_CachedPtr : (void*)this;
-				if (!selfArg) return;
+				void* selfArg = m_RigidbodyFunctions.m_SetVelocityValue_ThisIsPtr ? this->m_CachedPtr : this->GetManagedObjectPointer();
+				if (!selfArg)
+					return;
+
 				reinterpret_cast<void(UNITY_CALLING_CONVENTION)(void*, Vector3)>(m_RigidbodyFunctions.m_SetVelocity_Value)(selfArg, m_vVector);
 			}
 		}
@@ -95,34 +107,69 @@ namespace Unity
 				const char* injectedMethodName, int injectedArgCount,
 				std::initializer_list<const char*> icallObj,
 				std::initializer_list<const char*> icallPtr)
+			{
+				outPtr = nullptr;
+				outThisIsPtr = false;
+
+				if (void* p = IL2CPP::ResolveUnityMethod(UNITY_RIGIDBODY_CLASS, methodName, argCount))
 				{
-					outPtr = nullptr;
-					outThisIsPtr = false;
+					outPtr = p;
+					return;
+				}
 
-					if (void* p = IL2CPP::ResolveUnityMethod(UNITY_RIGIDBODY_CLASS, methodName, argCount))
-					{
-						outPtr = p; return;
-					}
+				for (const char* n : icallObj)
+				{
+					if (!n)
+						continue;
 
-					for (const char* n : icallObj)
+					if (void* p = IL2CPP::ResolveCallCached(n))
 					{
-						if (!n) continue;
-						if (void* p = IL2CPP::ResolveCallCached(n))
-						{
-							outPtr = p; outThisIsPtr = false; return;
-						}
+						outPtr = p;
+						outThisIsPtr = false;
+						return;
 					}
+				}
 
-					if (void* p = IL2CPP::ResolveUnityMethod(UNITY_RIGIDBODY_CLASS, injectedMethodName, injectedArgCount))
-					{
-						outPtr = p; outThisIsPtr = true; return;
-					}
+				if (void* p = IL2CPP::ResolveUnityMethod(UNITY_RIGIDBODY_CLASS, injectedMethodName, injectedArgCount))
+				{
+					outPtr = p;
+					outThisIsPtr = true;
+					return;
+				}
 
-					if (void* p = IL2CPP::ResolveCallAny(icallPtr))
+				if (void* p = IL2CPP::ResolveCallAny(icallPtr))
+				{
+					outPtr = p;
+					outThisIsPtr = true;
+					return;
+				}
+			};
+
+			auto resolveValueInstance = [&](void*& outPtr, bool& outThisIsPtr,
+				const char* methodName, int argCount,
+				std::initializer_list<const char*> icallObj)
+			{
+				outPtr = nullptr;
+				outThisIsPtr = false;
+
+				if (void* p = IL2CPP::ResolveUnityMethod(UNITY_RIGIDBODY_CLASS, methodName, argCount))
+				{
+					outPtr = p;
+					return;
+				}
+
+				for (const char* n : icallObj)
+				{
+					if (!n)
+						continue;
+
+					if (void* p = IL2CPP::ResolveCallCached(n))
 					{
-						outPtr = p; outThisIsPtr = true; return;
+						outPtr = p;
+						return;
 					}
-				};
+				}
+			};
 
 			resolveInstance(m_RigidbodyFunctions.m_GetDetectCollisions, m_RigidbodyFunctions.m_GetDetectCollisions_ThisIsPtr,
 				"get_detectCollisions", 0,
@@ -138,33 +185,31 @@ namespace Unity
 				{ IL2CPP_RStr(UNITY_RIGIDBODY_CLASS"::set_detectCollisions_Injected"),
 				  IL2CPP_RStr(UNITY_RIGIDBODY_CLASS"::set_detectCollisions_Injected(System.IntPtr,System.Boolean)") });
 
-			// Velocity: prefer injected(out/ref)
 			resolveInstance(m_RigidbodyFunctions.m_GetVelocity_Injected, m_RigidbodyFunctions.m_GetVelocity_ThisIsPtr,
 				"get_velocity_Injected", 1,
 				"get_velocity_Injected", 2,
-				{ UNITY_RIGIDBODY_GETVELOCITY, IL2CPP_RStr(UNITY_RIGIDBODY_CLASS"::get_velocity_Injected") },
-				{ IL2CPP_RStr(UNITY_RIGIDBODY_CLASS"::get_velocity_Injected(System.IntPtr,UnityEngine.Vector3&)"),
+				{},
+				{ UNITY_RIGIDBODY_GETVELOCITY,
+				  IL2CPP_RStr(UNITY_RIGIDBODY_CLASS"::get_velocity_Injected"),
+				  IL2CPP_RStr(UNITY_RIGIDBODY_CLASS"::get_velocity_Injected(System.IntPtr,UnityEngine.Vector3&)"),
 				  IL2CPP_RStr(UNITY_RIGIDBODY_CLASS"::get_velocity_Injected(System.IntPtr,UnityEngine.Vector3)") });
 
 			resolveInstance(m_RigidbodyFunctions.m_SetVelocity_Injected, m_RigidbodyFunctions.m_SetVelocity_ThisIsPtr,
 				"set_velocity_Injected", 1,
 				"set_velocity_Injected", 2,
-				{ UNITY_RIGIDBODY_SETVELOCITY, IL2CPP_RStr(UNITY_RIGIDBODY_CLASS"::set_velocity_Injected") },
-				{ IL2CPP_RStr(UNITY_RIGIDBODY_CLASS"::set_velocity_Injected(System.IntPtr,UnityEngine.Vector3&)"),
+				{},
+				{ UNITY_RIGIDBODY_SETVELOCITY,
+				  IL2CPP_RStr(UNITY_RIGIDBODY_CLASS"::set_velocity_Injected"),
+				  IL2CPP_RStr(UNITY_RIGIDBODY_CLASS"::set_velocity_Injected(System.IntPtr,UnityEngine.Vector3&)"),
 				  IL2CPP_RStr(UNITY_RIGIDBODY_CLASS"::set_velocity_Injected(System.IntPtr,UnityEngine.Vector3)") });
 
-			// Value-return/by-value fallbacks (optional)
-			resolveInstance(m_RigidbodyFunctions.m_GetVelocity_Value, m_RigidbodyFunctions.m_GetVelocityValue_ThisIsPtr,
+			resolveValueInstance(m_RigidbodyFunctions.m_GetVelocity_Value, m_RigidbodyFunctions.m_GetVelocityValue_ThisIsPtr,
 				"get_velocity", 0,
-				"get_velocity_Injected", 1,
-				{ IL2CPP_RStr(UNITY_RIGIDBODY_CLASS"::get_velocity") },
-				{ IL2CPP_RStr(UNITY_RIGIDBODY_CLASS"::get_velocity_Injected(System.IntPtr)") });
+				{ IL2CPP_RStr(UNITY_RIGIDBODY_CLASS"::get_velocity") });
 
-			resolveInstance(m_RigidbodyFunctions.m_SetVelocity_Value, m_RigidbodyFunctions.m_SetVelocityValue_ThisIsPtr,
+			resolveValueInstance(m_RigidbodyFunctions.m_SetVelocity_Value, m_RigidbodyFunctions.m_SetVelocityValue_ThisIsPtr,
 				"set_velocity", 1,
-				"set_velocity_Injected", 2,
-				{ IL2CPP_RStr(UNITY_RIGIDBODY_CLASS"::set_velocity") },
-				{ IL2CPP_RStr(UNITY_RIGIDBODY_CLASS"::set_velocity_Injected(System.IntPtr)") });
+				{ IL2CPP_RStr(UNITY_RIGIDBODY_CLASS"::set_velocity") });
 		}
 	}
 }

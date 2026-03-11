@@ -86,24 +86,24 @@ namespace Unity
 
 			m_ApplicationFunctions.m_Quit = nullptr;
 			m_ApplicationFunctions.m_QuitTakesExitCode = false;
-			if (void* p = IL2CPP::ResolveUnityMethod(UNITY_APPLICATION_CLASS, "Quit", 1))
+			if (void* pWithCode = IL2CPP::ResolveUnityMethod(UNITY_APPLICATION_CLASS, "Quit", 1))
 			{
-				m_ApplicationFunctions.m_Quit = p;
+				m_ApplicationFunctions.m_Quit = pWithCode;
 				m_ApplicationFunctions.m_QuitTakesExitCode = true;
 			}
-			else if (void* p = IL2CPP::ResolveCallAny({ UNITY_APPLICATION_QUIT1 }))
+			else if (void* pWithCodeIcall = IL2CPP::ResolveCallAny({ UNITY_APPLICATION_QUIT1 }))
 			{
-				m_ApplicationFunctions.m_Quit = p;
+				m_ApplicationFunctions.m_Quit = pWithCodeIcall;
 				m_ApplicationFunctions.m_QuitTakesExitCode = true;
 			}
-			else if (void* p0 = IL2CPP::ResolveUnityMethod(UNITY_APPLICATION_CLASS, "Quit", 0))
+			else if (void* pNoCode = IL2CPP::ResolveUnityMethod(UNITY_APPLICATION_CLASS, "Quit", 0))
 			{
-				m_ApplicationFunctions.m_Quit = p0;
+				m_ApplicationFunctions.m_Quit = pNoCode;
 				m_ApplicationFunctions.m_QuitTakesExitCode = false;
 			}
-			else if (void* p0 = IL2CPP::ResolveCallAny({ UNITY_APPLICATION_QUIT0 }))
+			else if (void* pNoCodeIcall = IL2CPP::ResolveCallAny({ UNITY_APPLICATION_QUIT0 }))
 			{
-				m_ApplicationFunctions.m_Quit = p0;
+				m_ApplicationFunctions.m_Quit = pNoCodeIcall;
 				m_ApplicationFunctions.m_QuitTakesExitCode = false;
 			}
 		}

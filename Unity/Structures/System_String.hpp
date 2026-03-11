@@ -5,23 +5,38 @@ namespace Unity
 	struct System_String : il2cppObject
 	{
 		int m_iLength;
-		wchar_t m_wString[1024];
+		wchar_t m_wString[1];
 
-		void Clear()
+		inline int Length() const
+		{
+			return m_iLength;
+		}
+
+		inline const wchar_t* Data() const
+		{
+			return m_wString;
+		}
+
+		inline void Clear()
 		{
 			if (!this) return;
 
-			memset(m_wString, 0, static_cast<size_t>(m_iLength) * 2);
+			memset(m_wString, 0, static_cast<size_t>(m_iLength + 1) * sizeof(wchar_t));
 			m_iLength = 0;
 		}
 
-		std::string ToString()
+		inline std::string ToString() const
 		{
-		    if (!this) return "";
+		    if (!this || m_iLength <= 0)
+				return {};
 
-		    std::string sRet(static_cast<size_t>(m_iLength + 1) * 4, '\0');
-		    WideCharToMultiByte(CP_UTF8, 0, m_wString, m_iLength, &sRet[0], static_cast<int>(sRet.size()), 0, 0);
-		    return sRet;
+			const int m_RequiredBytes = WideCharToMultiByte(CP_UTF8, 0, m_wString, m_iLength, nullptr, 0, nullptr, nullptr);
+			if (m_RequiredBytes <= 0)
+				return {};
+
+			std::string sRet(static_cast<size_t>(m_RequiredBytes), '\0');
+			WideCharToMultiByte(CP_UTF8, 0, m_wString, m_iLength, &sRet[0], m_RequiredBytes, nullptr, nullptr);
+			return sRet;
 		}
 	};
 }

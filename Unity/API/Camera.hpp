@@ -18,7 +18,7 @@ namespace Unity
 	};
 	inline CameraFunctions_t m_CameraFunctions;
 
-	class CCamera : public CGameObject
+	class CCamera : public CBehaviour
 	{
 	public:
 		float GetDepth()
@@ -26,7 +26,7 @@ namespace Unity
 			if (!this || !m_CameraFunctions.m_GetDepth)
 				return 0.f;
 
-			void* selfArg = m_CameraFunctions.m_GetDepth_ThisIsPtr ? this->m_CachedPtr : (void*)this;
+			void* selfArg = m_CameraFunctions.m_GetDepth_ThisIsPtr ? this->m_CachedPtr : this->GetManagedObjectPointer();
 			if (!selfArg) return 0.f;
 			return reinterpret_cast<float(UNITY_CALLING_CONVENTION)(void*)>(m_CameraFunctions.m_GetDepth)(selfArg);
 		}
@@ -36,7 +36,7 @@ namespace Unity
 			if (!this || !m_CameraFunctions.m_SetDepth)
 				return;
 
-			void* selfArg = m_CameraFunctions.m_SetDepth_ThisIsPtr ? this->m_CachedPtr : (void*)this;
+			void* selfArg = m_CameraFunctions.m_SetDepth_ThisIsPtr ? this->m_CachedPtr : this->GetManagedObjectPointer();
 			if (!selfArg) return;
 			reinterpret_cast<void(UNITY_CALLING_CONVENTION)(void*, float)>(m_CameraFunctions.m_SetDepth)(selfArg, m_fValue);
 		}
@@ -46,7 +46,7 @@ namespace Unity
 			if (!this || !m_CameraFunctions.m_GetFieldOfView)
 				return 0.f;
 
-			void* selfArg = m_CameraFunctions.m_GetFieldOfView_ThisIsPtr ? this->m_CachedPtr : (void*)this;
+			void* selfArg = m_CameraFunctions.m_GetFieldOfView_ThisIsPtr ? this->m_CachedPtr : this->GetManagedObjectPointer();
 			if (!selfArg) return 0.f;
 			return reinterpret_cast<float(UNITY_CALLING_CONVENTION)(void*)>(m_CameraFunctions.m_GetFieldOfView)(selfArg);
 		}
@@ -56,7 +56,7 @@ namespace Unity
 			if (!this || !m_CameraFunctions.m_SetFieldOfView)
 				return;
 
-			void* selfArg = m_CameraFunctions.m_SetFieldOfView_ThisIsPtr ? this->m_CachedPtr : (void*)this;
+			void* selfArg = m_CameraFunctions.m_SetFieldOfView_ThisIsPtr ? this->m_CachedPtr : this->GetManagedObjectPointer();
 			if (!selfArg) return;
 			reinterpret_cast<void(UNITY_CALLING_CONVENTION)(void*, float)>(m_CameraFunctions.m_SetFieldOfView)(selfArg, m_fValue);
 		}
@@ -69,7 +69,7 @@ namespace Unity
 				return;
 			}
 
-			void* selfArg = m_CameraFunctions.m_WorldToScreen_ThisIsPtr ? this->m_CachedPtr : (void*)this;
+			void* selfArg = m_CameraFunctions.m_WorldToScreen_ThisIsPtr ? this->m_CachedPtr : this->GetManagedObjectPointer();
 			if (!selfArg)
 			{
 				m_vScreen = {};
@@ -88,11 +88,11 @@ namespace Unity
 			// Static getters
 			m_CameraFunctions.m_GetCurrent = IL2CPP::ResolveUnityMethodOrIcall(
 				UNITY_CAMERA_CLASS, "get_current", 0,
-				{ UNITY_CAMERA_GETCURRENT, IL2CPP_RStr(UNITY_CAMERA_CLASS"::get_current_Injected") });
+				{ UNITY_CAMERA_GETCURRENT });
 
 			m_CameraFunctions.m_GetMain = IL2CPP::ResolveUnityMethodOrIcall(
 				UNITY_CAMERA_CLASS, "get_main", 0,
-				{ UNITY_CAMERA_GETMAIN, IL2CPP_RStr(UNITY_CAMERA_CLASS"::get_main_Injected") });
+				{ UNITY_CAMERA_GETMAIN });
 
 			auto resolveInstance = [&](void*& outPtr, bool& outThisIsPtr,
 				const char* methodName, int argCount,
@@ -160,8 +160,9 @@ namespace Unity
 			resolveInstance(m_CameraFunctions.m_WorldToScreen, m_CameraFunctions.m_WorldToScreen_ThisIsPtr,
 				"WorldToScreenPoint_Injected", 3,       // (Vector3, int, out Vector3) OR (this, v, eye, out)
 				"WorldToScreenPoint_Injected", 4,       // if IntPtr this is explicit in managed injected wrapper
-				{ UNITY_CAMERA_WORLDTOSCREEN, IL2CPP_RStr(UNITY_CAMERA_CLASS"::WorldToScreenPoint_Injected") },
-				{ IL2CPP_RStr(UNITY_CAMERA_CLASS"::WorldToScreenPoint_Injected"),
+				{},
+				{ UNITY_CAMERA_WORLDTOSCREEN,
+				  IL2CPP_RStr(UNITY_CAMERA_CLASS"::WorldToScreenPoint_Injected"),
 				  IL2CPP_RStr(UNITY_CAMERA_CLASS"::WorldToScreenPoint_Injected(System.IntPtr,UnityEngine.Vector3&,System.Int32,UnityEngine.Vector3&)") });
 		}
 

@@ -15,13 +15,44 @@ namespace Unity
 		{
 			IL2CPP::SystemTypeCache::Initializer::Add(UNITY_LAYERMASK_CLASS);
 
-			m_LayerMaskFunctions.m_LayerToName = IL2CPP::ResolveUnityMethodOrIcall(
-				UNITY_LAYERMASK_CLASS, "LayerToName", 1,
-				{ UNITY_LAYERMASK_LAYERTONAME, IL2CPP_RStr(UNITY_LAYERMASK_CLASS"::LayerToName_Injected") });
+			auto resolveStatic = [&](void*& outPtr,
+				const char* methodName,
+				std::initializer_list<const char*> primarySignature,
+				std::initializer_list<const char*> secondarySignature,
+				int argCount,
+				std::initializer_list<const char*> icallNames)
+				{
+					outPtr = IL2CPP::ResolveUnityMethodOrIcall(UNITY_LAYERMASK_CLASS, methodName, primarySignature, icallNames);
+					if (outPtr || secondarySignature.size() == 0U)
+						return;
 
-			m_LayerMaskFunctions.m_NameToLayer = IL2CPP::ResolveUnityMethodOrIcall(
-				UNITY_LAYERMASK_CLASS, "NameToLayer", 1,
-				{ UNITY_LAYERMASK_NAMETOLAYER, IL2CPP_RStr(UNITY_LAYERMASK_CLASS"::NameToLayer_Injected") });
+					outPtr = IL2CPP::ResolveUnityMethodOrIcall(UNITY_LAYERMASK_CLASS, methodName, secondarySignature, icallNames);
+					if (outPtr)
+						return;
+
+					outPtr = IL2CPP::ResolveUnityMethodOrIcall(UNITY_LAYERMASK_CLASS, methodName, argCount, icallNames);
+				};
+
+			resolveStatic(m_LayerMaskFunctions.m_LayerToName,
+				"LayerToName",
+				{ "System.Int32" },
+				{ "System.UInt32" },
+				1,
+				{
+					UNITY_LAYERMASK_LAYERTONAME,
+					IL2CPP_RStr(UNITY_LAYERMASK_CLASS"::LayerToName(System.Int32)"),
+					IL2CPP_RStr(UNITY_LAYERMASK_CLASS"::LayerToName(System.UInt32)")
+				});
+
+			resolveStatic(m_LayerMaskFunctions.m_NameToLayer,
+				"NameToLayer",
+				{ "System.String" },
+				{},
+				1,
+				{
+					UNITY_LAYERMASK_NAMETOLAYER,
+					IL2CPP_RStr(UNITY_LAYERMASK_CLASS"::NameToLayer(System.String)")
+				});
 		}
 
 		inline System_String* LayerToName(unsigned int m_uLayer)
@@ -29,7 +60,7 @@ namespace Unity
 			if (!m_LayerMaskFunctions.m_LayerToName)
 				return nullptr;
 
-			return reinterpret_cast<System_String * (UNITY_CALLING_CONVENTION)(unsigned int)>(m_LayerMaskFunctions.m_LayerToName)(m_uLayer);
+			return reinterpret_cast<System_String * (UNITY_CALLING_CONVENTION)(int)>(m_LayerMaskFunctions.m_LayerToName)(static_cast<int>(m_uLayer));
 		}
 
 		inline uint32_t NameToLayer(const char* m_pName)
@@ -41,7 +72,7 @@ namespace Unity
 			if (!name)
 				return static_cast<uint32_t>(-1);
 
-			return reinterpret_cast<uint32_t(UNITY_CALLING_CONVENTION)(void*)>(m_LayerMaskFunctions.m_NameToLayer)(name);
+			return reinterpret_cast<uint32_t(UNITY_CALLING_CONVENTION)(System_String*)>(m_LayerMaskFunctions.m_NameToLayer)(name);
 		}
 	}
 }
